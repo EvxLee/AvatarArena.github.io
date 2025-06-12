@@ -11,9 +11,18 @@
     <div id="selection-screen">
         <h1>Choose Your Avatar</h1>
         <div class="avatar-list">
-            <button data-avatar="Knight">🛡️ Knight</button>
-            <button data-avatar="Mage">🧙‍♂️ Mage</button>
-            <button data-avatar="Rogue">🗡️ Rogue</button>
+            <div class="avatar-option">
+                <img src="assets/avatars/knight.png" alt="" class="avatar-img">
+                <button data-avatar="Knight">🛡️ Knight</button>
+            </div>
+            <div class="avatar-option">
+                <img src="assets/avatars/mage.png" alt="" class="avatar-img">
+                <button data-avatar="Mage">🧙‍♂️ Mage</button>
+            </div>
+            <div class="avatar-option">
+                <img src="assets/avatars/rogue.png" alt="" class="avatar-img">
+                <button data-avatar="Rogue">🗡️ Rogue</button>
+            </div>
         </div>
     </div>
 
@@ -25,17 +34,18 @@
         <p>Level <span id="level">1</span> - XP: <span id="xp">0</span></p>
         <div id="coins-area-loadout">
             Coins: <span id="coins-loadout">0</span>
-            <div id="inventory-info">Inventory -
-                W: <span id="inv-weapon">0</span>
-                A: <span id="inv-armor">0</span>
-                T: <span id="inv-artifact">0</span>
+            <div id="inventory-info">
+                <strong>Inventory</strong><br>
+                Weapons: <span id="inv-weapon">0</span><br>
+                Armor: <span id="inv-armor">0</span><br>
+                Artifacts: <span id="inv-artifact">0</span>
             </div>
             <div id="equip-info-loadout"></div>
             <button onclick="equipWeapon()">Equip Weapon</button>
             <button onclick="equipArmor()">Equip Armor</button>
             <button onclick="equipArtifact()">Equip Artifact</button>
-            <button id="shop-btn">Shop</button>
-            <button id="back-btn">Back</button>
+            <button id="shop-btn">🛒 Shop</button>
+            <button id="back-btn">🔙 Back</button>
         </div>
         <div id="shop-screen" class="hidden">
             <h3>Shop</h3>
@@ -43,10 +53,10 @@
             <button id="buy-armor-btn" onclick="buyArmor()">Buy Armor (-10)</button>
             <button id="buy-artifact-btn" onclick="buyArtifact()">Buy Artifact (-20)</button>
             <div id="preview" class="preview"></div>
-            <button onclick="closeShop()">Close</button>
+            <button onclick="closeShop()">✖️ Close</button>
         </div>
-        <button id="start-btn">Start Battle</button>
-        <button id="boss-btn">Boss Battle</button>
+        <button id="start-btn">⚔️ Start Battle</button>
+        <button id="boss-btn">👹 Boss Battle</button>
     </div>
 
     <div id="battle-screen" class="hidden">
@@ -56,6 +66,7 @@
                 <h3 id="p1-name"></h3>
                 <div class="model" id="p1-model"></div>
                 <div class="health-bar"><div class="health-inner" id="p1-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p1-energy"></div></div>
                 <p id="p1-stats"></p>
                 <p id="p1-equip"></p>
             </div>
@@ -63,14 +74,15 @@
                 <h3 id="p2-name"></h3>
                 <div class="model" id="p2-model"></div>
                 <div class="health-bar"><div class="health-inner" id="p2-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p2-energy"></div></div>
                 <p id="p2-stats"></p>
                 <p id="p2-equip"></p>
             </div>
         </div>
         <div class="actions">
-            <button id="attack-btn">Attack</button>
-            <button id="defend-btn">Defend</button>
-            <button id="special-btn">Special</button>
+            <button id="attack-btn">👊 Attack</button>
+            <button id="defend-btn">🛡️ Defend</button>
+            <button id="special-btn">✨ Special</button>
         </div>
         <div class="log" id="log"></div>
         <div id="coins-area">
@@ -84,8 +96,8 @@
 
     <div id="victory-screen" class="hidden">
         <h1 id="winner"></h1>
-        <button id="next-btn" class="hidden">Next Battle</button>
-        <button onclick="location.reload()">Restart</button>
+        <button id="next-btn" class="hidden">▶️ Next Battle</button>
+        <button onclick="location.reload()">🔄 Restart</button>
     </div>
 </div>
 <script src="game.js"></script>
