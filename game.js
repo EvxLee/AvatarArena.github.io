@@ -434,13 +434,12 @@ function equipWeapon(){
     }else if(inventory.weapon.common.length){
         name=inventory.weapon.common.pop(); rarity='common'; players[0].atk+=2;
     }else{
-        logMsg('No weapons available.');
+        logMsg('No weapons in inventory.');
         return;
     }
     players[0].equipment.weapon.push(name);
-    logMsg(`Equipped ${name} (${rarity}).`);
-    updateEquipInfo();
     updateCoins();
+    updateEquipInfo();
     updateLoadout();
     updateUI();
 }
@@ -459,13 +458,12 @@ function equipArmor(){
     }else if(inventory.armor.common.length){
         name=inventory.armor.common.pop(); rarity='common'; players[0].def+=2;
     }else{
-        logMsg('No armor available.');
+        logMsg('No armor in inventory.');
         return;
     }
     players[0].equipment.armor.push(name);
-    logMsg(`Equipped ${name} (${rarity}).`);
-    updateEquipInfo();
     updateCoins();
+    updateEquipInfo();
     updateLoadout();
     updateUI();
 }
@@ -478,38 +476,33 @@ function equipArtifact(){
     let rarity='';
     let name='';
     if(inventory.artifact.epic.length){
-        name=inventory.artifact.epic.pop(); rarity='epic';
-        cooldownBase[0]=Math.max(1,cooldownBase[0]-3);
-        players[0].maxHp+=30; players[0].maxEnergy+=15;
+        name=inventory.artifact.epic.pop(); rarity='epic'; cooldownBase[0]=Math.max(1,cooldownBase[0]-3); players[0].maxHp+=30; players[0].maxEnergy+=15;
     }else if(inventory.artifact.rare.length){
-        name=inventory.artifact.rare.pop(); rarity='rare';
-        cooldownBase[0]=Math.max(1,cooldownBase[0]-2);
-        players[0].maxHp+=20; players[0].maxEnergy+=10;
+        name=inventory.artifact.rare.pop(); rarity='rare'; cooldownBase[0]=Math.max(1,cooldownBase[0]-2); players[0].maxHp+=20; players[0].maxEnergy+=10;
     }else if(inventory.artifact.common.length){
-        name=inventory.artifact.common.pop(); rarity='common';
-        cooldownBase[0]=Math.max(1,cooldownBase[0]-1);
-        players[0].maxHp+=10; players[0].maxEnergy+=5;
+        name=inventory.artifact.common.pop(); rarity='common'; cooldownBase[0]=Math.max(1,cooldownBase[0]-1); players[0].maxHp+=10; players[0].maxEnergy+=5;
     }else{
-        logMsg('No artifacts available.');
+        logMsg('No artifacts in inventory.');
         return;
     }
     players[0].energy=players[0].maxEnergy;
     players[0].equipment.artifact.push(name);
-    logMsg(`Equipped ${name} (${rarity}).`);
-    updateEquipInfo();
     updateCoins();
+    updateEquipInfo();
     updateLoadout();
     updateUI();
 }
 
 function randomRarity(){
     const roll=Math.random();
-    return roll<0.1?'epic':roll<0.4?'rare':'common';
+    if(roll<0.1) return 'epic';
+    if(roll<0.4) return 'rare';
+    return 'common';
 }
 
 function randomItemName(type,rarity){
-    const list=itemNames[type][rarity];
-    return list[Math.floor(Math.random()*list.length)];
+    const arr=itemNames[type][rarity];
+    return arr[Math.floor(Math.random()*arr.length)];
 }
 
 function buyWeapon(){
@@ -609,7 +602,7 @@ function hideCustom(){
 function populateCustom(){
     const p=players[0];
     document.getElementById('weapon-list').textContent=p.equipment.weapon.join(', ')||'None';
-    document.getElementById('armor-list').textContent=p.equipment.armor.join(',')||'None';
+    document.getElementById('armor-list').textContent=p.equipment.armor.join(', ')||'None';
     document.getElementById('artifact-list').textContent=p.equipment.artifact.join(', ')||'None';
 
     const wSel=document.getElementById('weapon-select');
