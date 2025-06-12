@@ -110,9 +110,13 @@
         </div>
         <div class="log" id="log"></div>
         </div>
-    <div id="victory-screen" class="hidden">
+    <div id="victory-screen" class="hidden end-screen">
         <h1 id="winner"></h1>
         <button id="next-btn" class="hidden">▶️ Next Battle</button>
+        <button onclick="location.reload()">🔄 Restart</button>
+    </div>
+    <div id="defeat-screen" class="hidden end-screen">
+        <h1 id="loser"></h1>
         <button onclick="location.reload()">🔄 Restart</button>
     </div>
 </div>
