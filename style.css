@@ -19,7 +19,7 @@ button{
 .container{
     max-width:900px;
     width:90%;
-    height:90vh;
+    height:95vh;
     margin:20px auto;
     padding:15px;
     box-sizing:border-box;
@@ -27,10 +27,15 @@ button{
     color:#000;
 }
 .hidden{display:none;}
-.avatar-list{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+.avatar-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:20px;
+    justify-items:center;
+    max-width:500px;
+    margin:0 auto;
+    aspect-ratio:1/1;
 }
 .avatar-option{
     display:flex;
@@ -40,23 +45,25 @@ button{
     width:100%;
     margin-bottom:20px;
 }
+.avatar-option.empty{visibility:hidden;}
 .avatar-img{
     width:150px;
     height:150px;
     margin-bottom:10px;
     background:#ccc;
 }
-.avatar-list button{
+.avatar-grid button{
     width:85%;
     max-width:320px;
     font-size:24px;
 }
-.avatar-list button:hover{background:#eee;}
+.avatar-grid button:hover{background:#eee;}
 .battle-area{
     display:flex;
     flex-direction:column;
     align-items:center;
     margin-top:20px;
+    flex:1 1 auto;
 }
 .player{
     width:70%;
@@ -92,6 +99,11 @@ button{
     width:100%;
     transition:width 0.3s;
 }
+#battle-screen{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
 .actions button{
     padding:15px 40px;
 }
@@ -102,7 +114,7 @@ button{
 }
 .log{
     text-align:left;
-    height:150px;
+    height:120px;
     overflow-y:auto;
     border:2px solid #333;
     padding:10px;
