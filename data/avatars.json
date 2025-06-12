@@ -1,0 +1,35 @@
+{
+  "Knight": {
+    "hp": 120,
+    "atk": 8,
+    "def": 12,
+    "special": "Shield Bash",
+    "emoji": "🛡️",
+    "slots": {"weapon": 2, "armor": 2, "artifact": 3},
+    "energy": 40,
+    "cost": 20,
+    "lore": "A stalwart defender sworn to protect the realm."
+  },
+  "Mage": {
+    "hp": 90,
+    "atk": 14,
+    "def": 6,
+    "special": "Fireball",
+    "emoji": "🧙‍♂️",
+    "slots": {"weapon": 2, "armor": 1, "artifact": 3},
+    "energy": 70,
+    "cost": 25,
+    "lore": "A scholar of the arcane who bends reality."
+  },
+  "Rogue": {
+    "hp": 100,
+    "atk": 10,
+    "def": 8,
+    "special": "Poison Dagger",
+    "emoji": "🗡️",
+    "slots": {"weapon": 3, "armor": 1, "artifact": 2},
+    "energy": 55,
+    "cost": 15,
+    "lore": "A nimble trickster thriving in the shadows."
+  }
+}
