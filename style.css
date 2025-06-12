@@ -17,7 +17,6 @@ button{
 }
 
 .container{
-.container{
     max-width:none;
     width:100%;
     height:100vh;
@@ -34,18 +33,21 @@ button{
 }
 .avatar-option{
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
     width:100%;
+    margin-bottom:20px;
 }
 .avatar-img{
-    width:120px;
-    height:120px;
-    margin-right:20px;
+    width:150px;
+    height:150px;
+    margin-bottom:10px;
     background:#ccc;
 }
 .avatar-list button{
-    width:90%;
+    width:85%;
+    max-width:320px;
     font-size:24px;
 }
 .avatar-list button:hover{background:#eee;}
@@ -156,4 +158,18 @@ body.rogue-bg{
 @keyframes fall{
     from{transform:translateY(-100vh) rotate(0deg);opacity:1;}
     to{transform:translateY(100vh) rotate(360deg);opacity:0;}
+}
+
+@media (max-width:600px){
+    button{
+        font-size:16px;
+        padding:12px 20px;
+    }
+    .avatar-img{
+        width:120px;
+        height:120px;
+    }
+    .avatar-list button{
+        font-size:20px;
+    }
 }
