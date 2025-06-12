@@ -54,11 +54,13 @@ button{
 .avatar-list button:hover{background:#eee;}
 .battle-area{
     display:flex;
-    justify-content:space-between;
+    flex-direction:column;
+    align-items:center;
     margin-top:20px;
 }
 .player{
-    width:45%;
+    width:70%;
+    margin-bottom:20px;
     border:2px solid #333;
     border-radius:8px;
     padding:10px;
@@ -113,12 +115,6 @@ button{
     font-size:64px;
     margin-bottom:5px;
 }
-#coins-area{
-    margin-top:10px;
-}
-#coins-area button{
-    margin:5px 10px;
-}
 #coins-area-loadout{
     margin-top:10px;
 }
@@ -131,6 +127,13 @@ button{
     padding:10px;
     border-radius:8px;
     background:#f7f7f7;
+}
+
+#custom-screen{
+    margin-top:10px;
+}
+#custom-screen select{
+    margin:5px;
 }
 
 .preview{
