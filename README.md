@@ -22,7 +22,7 @@ The **data** folder keeps JSON data used by the game. Currently it stores
 `avatars.json` which defines hit points, attack values and other starting stats
 for each avatar class.
 
-The **assets** folder contains placeholders for future images. The `assets/avatars` directory currently only holds a README file, and `assets/items` is empty.
+The **assets** folder contains placeholders for future images. Use the `assets/avatars` directory for avatar art and `assets/items` for gear images.
 
 A `.gitignore` file is included to keep temporary files or editor caches out of
 version control.

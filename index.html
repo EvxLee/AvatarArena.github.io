@@ -39,9 +39,10 @@
         </div>
         <div id="shop-screen" class="hidden">
             <h3>Shop</h3>
-            <button onclick="buyWeapon()">Buy Weapon (-10)</button>
-            <button onclick="buyArmor()">Buy Armor (-10)</button>
-            <button onclick="buyArtifact()">Buy Artifact (-20)</button>
+            <button id="buy-weapon-btn" onclick="buyWeapon()">Buy Weapon (-10)</button>
+            <button id="buy-armor-btn" onclick="buyArmor()">Buy Armor (-10)</button>
+            <button id="buy-artifact-btn" onclick="buyArtifact()">Buy Artifact (-20)</button>
+            <div id="preview" class="preview"></div>
             <button onclick="closeShop()">Close</button>
         </div>
         <button id="start-btn">Start Battle</button>

@@ -19,6 +19,11 @@ const itemNames={
         epic:['Phoenix Heart','Ancient Relic','Time Shard']
     }
 };
+const backgrounds={
+    Knight:'knight-bg',
+    Mage:'mage-bg',
+    Rogue:'rogue-bg'
+};
 let players=[];
 let current=0;
 let defending=[false,false];
@@ -129,6 +134,7 @@ document.querySelectorAll('.avatar-list button').forEach(btn=>{
             energy:avatars[avatar].energy,
             weapons:0,armor:0,artifacts:0,slots:avatars[avatar].slots
         };
+        document.body.className=backgrounds[avatar];
         showLoadout();
     });
 });
@@ -251,7 +257,7 @@ function updateTurn(){
 function attack(){
     const attacker=players[current];
     const defender=players[1-current];
-    if(Math.random()<0.1){
+    if(Math.random()<0.05){
         logMsg(`${defender.name} dodged the attack!`);
         defending[current]=false;
         endTurn();
@@ -276,13 +282,13 @@ function attack(){
 function defend(){
     defending[current]=true;
     const roll=Math.random();
-    if(roll<0.05){
+    if(roll<0.02){
         defendMult[current]=0;
         logMsg(`${players[current].name} prepares a perfect block!`);
-    }else if(roll<0.20){
+    }else if(roll<0.10){
         defendMult[current]=0.25;
         logMsg(`${players[current].name} braces to block 75% damage.`);
-    }else if(roll<0.50){
+    }else if(roll<0.35){
         defendMult[current]=0.5;
         logMsg(`${players[current].name} braces to block 50% damage.`);
     }else{
@@ -304,7 +310,7 @@ function special(){
     }
     attacker.energy-=attacker.cost;
     const defender=players[1-current];
-    if(Math.random()<0.1){
+    if(Math.random()<0.05){
         logMsg(`${defender.name} dodged the special attack!`);
         cooldown[current]=cooldownBase[current];
         defending[current]=false;
@@ -471,6 +477,15 @@ function randomItemName(type,rarity){
     return arr[Math.floor(Math.random()*arr.length)];
 }
 
+function previewItem(type){
+    const r=randomRarity();
+    document.getElementById('preview').textContent=`${randomItemName(type,r)} (${r})`;
+}
+
+function clearPreview(){
+    document.getElementById('preview').textContent='';
+}
+
 function buyWeapon(){
     if(coins>=10){
         coins-=10;
@@ -574,3 +589,9 @@ document.getElementById('shop-btn').onclick=()=>{
 };
 document.getElementById('back-btn').onclick=goBack;
 document.getElementById('boss-btn').onclick=startBossBattle;
+document.getElementById('buy-weapon-btn').addEventListener('mouseenter',()=>previewItem('weapon'));
+document.getElementById('buy-weapon-btn').addEventListener('mouseleave',clearPreview);
+document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previewItem('armor'));
+document.getElementById('buy-armor-btn').addEventListener('mouseleave',clearPreview);
+document.getElementById('buy-artifact-btn').addEventListener('mouseenter',()=>previewItem('artifact'));
+document.getElementById('buy-artifact-btn').addEventListener('mouseleave',clearPreview);
