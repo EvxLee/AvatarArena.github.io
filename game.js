@@ -244,8 +244,10 @@ function endTurn(){
     defendMult[current]=1;
     if(cooldown[current]>0)cooldown[current]--;
     updateUI();
-    checkVictory();
-    updateTurn();
+    const over=checkVictory();
+    if(!over){
+        updateTurn();
+    }
 }
 
 function cpuAction(){
@@ -397,7 +399,9 @@ function checkVictory(){
         }
         updateCoins();
         updateEquipInfo();
+        return true;
     }
+    return false;
 }
 
 function nextBattle(){
@@ -602,7 +606,7 @@ function hideCustom(){
 function populateCustom(){
     const p=players[0];
     document.getElementById('weapon-list').textContent=p.equipment.weapon.join(', ')||'None';
-    document.getElementById('armor-list').textContent=p.equipment.armor.join(',')||'None';
+    document.getElementById('armor-list').textContent=p.equipment.armor.join(', ')||'None';
     document.getElementById('artifact-list').textContent=p.equipment.artifact.join(', ')||'None';
 
     const wSel=document.getElementById('weapon-select');
