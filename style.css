@@ -5,6 +5,18 @@ body{
     padding:0;
     text-align:center;
 }
+
+button{
+    font-size:18px;
+    padding:15px 30px;
+    margin:8px;
+    border:2px solid #333;
+    border-radius:8px;
+    cursor:pointer;
+    background:#fff;
+}
+
+.container{
 .container{
     max-width:none;
     width:100%;
@@ -15,14 +27,26 @@ body{
     background:#fff;
 }
 .hidden{display:none;}
+.avatar-list{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.avatar-option{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+}
+.avatar-img{
+    width:120px;
+    height:120px;
+    margin-right:20px;
+    background:#ccc;
+}
 .avatar-list button{
-    margin:5px;
-    padding:10px 20px;
-    font-size:16px;
-    border:2px solid #333;
-    border-radius:8px;
-    background:#fff;
-    cursor:pointer;
+    width:90%;
+    font-size:24px;
 }
 .avatar-list button:hover{background:#eee;}
 .battle-area{
@@ -50,13 +74,21 @@ body{
     width:100%;
     transition:width 0.3s;
 }
+.energy-bar{
+    height:10px;
+    background:#bbdefb;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:5px;
+}
+.energy-inner{
+    height:100%;
+    background:#2196f3;
+    width:100%;
+    transition:width 0.3s;
+}
 .actions button{
-    margin:5px;
-    padding:10px 20px;
-    background:#fff;
-    border:2px solid #333;
-    border-radius:8px;
-    cursor:pointer;
+    padding:15px 40px;
 }
 .actions button:hover{background:#eee;}
 .actions button:disabled{
@@ -82,13 +114,13 @@ body{
     margin-top:10px;
 }
 #coins-area button{
-    margin:0 5px;
+    margin:5px 10px;
 }
 #coins-area-loadout{
     margin-top:10px;
 }
 #coins-area-loadout button{
-    margin:0 5px;
+    margin:5px 10px;
 }
 #shop-screen{
     margin-top:10px;
@@ -112,4 +144,16 @@ body.mage-bg{
 body.rogue-bg{
     background:linear-gradient(#888,#222);
     color:#fff;
+}
+
+.confetti{
+    position:fixed;
+    font-size:24px;
+    pointer-events:none;
+    animation:fall 1s linear forwards;
+}
+
+@keyframes fall{
+    from{transform:translateY(-100vh) rotate(0deg);opacity:1;}
+    to{transform:translateY(100vh) rotate(360deg);opacity:0;}
 }
