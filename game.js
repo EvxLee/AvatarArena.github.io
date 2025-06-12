@@ -101,22 +101,22 @@ function updateInventoryUI(){
     const w=document.getElementById('inv-weapon');
     const a=document.getElementById('inv-armor');
     const t=document.getElementById('inv-artifact');
-    if(w) w.textContent=`Common:${inventory.weapon.common.length} `+
-        `Rare:${inventory.weapon.rare.length} `+
-        `Epic:${inventory.weapon.epic.length}`;
-    if(a) a.textContent=`Common:${inventory.armor.common.length} `+
-        `Rare:${inventory.armor.rare.length} `+
-        `Epic:${inventory.armor.epic.length}`;
-    if(t) t.textContent=`Common:${inventory.artifact.common.length} `+
-        `Rare:${inventory.artifact.rare.length} `+
-        `Epic:${inventory.artifact.epic.length}`;
+    if(w) w.textContent=`Common:${inventory.weapon.common.length} `
+        + `Rare:${inventory.weapon.rare.length} `
+        + `Epic:${inventory.weapon.epic.length}`;
+    if(a) a.textContent=`Common:${inventory.armor.common.length} `
+        + `Rare:${inventory.armor.rare.length} `
+        + `Epic:${inventory.armor.epic.length}`;
+    if(t) t.textContent=`Common:${inventory.artifact.common.length} `
+        + `Rare:${inventory.artifact.rare.length} `
+        + `Epic:${inventory.artifact.epic.length}`;
 }
 
 function updateEquipInfo(){
     if(players.length){
-        const info=`Weapons: ${players[0].weapons}/${players[0].slots.weapon} `+
-        `Armor: ${players[0].armor}/${players[0].slots.armor} `+
-        `Artifacts: ${players[0].artifacts}/${players[0].slots.artifact}`;
+        const info=`Weapons: ${players[0].weapons}/${players[0].slots.weapon} `
+        + `Armor: ${players[0].armor}/${players[0].slots.armor} `
+        + `Artifacts: ${players[0].artifacts}/${players[0].slots.artifact}`;
         document.getElementById('equip-info').textContent=info;
         const el=document.getElementById('equip-info-loadout');
         if(el) el.textContent=info;
@@ -212,9 +212,9 @@ function updateUI(){
         document.getElementById('p'+(i+1)+'-model').textContent=players[i].emoji;
         document.getElementById('p'+(i+1)+'-stats').textContent=`HP: ${Math.max(0,players[i].hp)}/${players[i].maxHp} ATK: ${players[i].atk} DEF: ${players[i].def} EN: ${players[i].energy}/${players[i].maxEnergy}`;
         document.getElementById('p'+(i+1)+'-equip').textContent=
-            `Weapons: ${players[i].weapons}/${players[i].slots.weapon} `+
-            `Armor: ${players[i].armor}/${players[i].slots.armor} `+
-            `Artifacts: ${players[i].artifacts}/${players[i].slots.artifact}`;
+            `Weapons: ${players[i].weapons}/${players[i].slots.weapon} `
+            + `Armor: ${players[i].armor}/${players[i].slots.armor} `
+            + `Artifacts: ${players[i].artifacts}/${players[i].slots.artifact}`;
         const ratio=Math.max(0,players[i].hp)/players[i].maxHp*100;
         const bar=document.getElementById('p'+(i+1)+'-health');
         bar.style.width=ratio+'%';
@@ -357,9 +357,9 @@ function special(){
         }else{
             logMsg(`${attacker.name}'s Fireball missed!`);
         }
-    }else if(name.includes('Rogue')){
+    }else{
         let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        let dmg=Math.max(10,Math.round(attacker.atk*1.5 - defense/2));
         if(defending[1-current]){
             dmg=Math.round(dmg*defendMult[1-current]);
         }
