@@ -1,697 +1,125 @@
-let avatars = {};
-let avatarsLoaded = false;
-fetch("data/avatars.json")
-  .then(r => r.json())
-  .then(data => { avatars = data; avatarsLoaded = true; });
-const itemNames={
-    weapon:{
-        common:['Rusty Sword','Wooden Club','Simple Dagger','Bronze Axe','Oak Spear'],
-        rare:['Steel Blade','Enchanted Bow','Warhammer','Silver Rapier','Runic Spear'],
-        epic:['Dragon Slayer','Arcane Staff','Shadow Blade','Celestial Edge','Doom Hammer']
-    },
-    armor:{
-        common:['Leather Armor','Wooden Shield','Cloth Robe','Padded Vest','Hide Coat'],
-        rare:['Chainmail','Iron Shield','Mage Cloak','Knight Plate','Scaled Mail'],
-        epic:['Dragon Scale','Blessed Aegis','Shadow Garb','Guardian Plate','Ethereal Shroud']
-    },
-    artifact:{
-        common:['Minor Talisman','Old Charm','Traveler\'s Stone','Lucky Coin','Tiny Totem'],
-        rare:['Mystic Amulet','Guardian Rune','Sorcerer\'s Orb','Dragon Eye','Moon Pendant'],
-        epic:['Phoenix Heart','Ancient Relic','Time Shard','Star Fragment','Valkyrie Sigil']
-    }
-};
-const backgrounds={
-    Knight:'knight-bg',
-    Mage:'mage-bg',
-    Rogue:'rogue-bg'
-};
-let players=[];
-let current=0;
-let defending=[false,false];
-let defendMult=[1,1];
-let stun=[0,0];
-let poison=[0,0];
-let cooldown=[0,0];
-let cooldownBase=[3,3];
-let coins=0;
-let inventory={
-    weapon:{common:[],rare:[],epic:[]},
-    armor:{common:[],rare:[],epic:[]},
-    artifact:{common:[],rare:[],epic:[]}
-};
-let xp=0;
-let level=1;
-let cpuCoins=0;
-let battleNumber=1;
-let isBoss=false;
-const log=document.getElementById('log');
-function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avatar Arena</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div id="selection-screen">
+        <h1>Choose Your Avatar</h1>
+        <div class="avatar-grid">
+            <div class="avatar-option">
+                <img src="assets/avatars/knight.png" alt="" class="avatar-img">
+                <button data-avatar="Knight">🛡️ Knight</button>
+            </div>
+            <div class="avatar-option">
+                <img src="assets/avatars/mage.png" alt="" class="avatar-img">
+                <button data-avatar="Mage">🧙‍♂️ Mage</button>
+            </div>
+            <div class="avatar-option">
+                <img src="assets/avatars/rogue.png" alt="" class="avatar-img">
+                <button data-avatar="Rogue">🗡️ Rogue</button>
+            </div>
+        </div>
+    </div>
 
-loadProgress();
-updateCoins();
+    <div id="loadout-screen" class="hidden">
+        <h2 id="loadout-name"></h2>
+        <div class="model" id="loadout-model"></div>
+        <p id="loadout-stats"></p>
+        <p id="lore"></p>
+        <p>Level <span id="level">1</span> - XP: <span id="xp">0</span></p>
+        <div id="coins-area-loadout">
+            🪙 <span id="coins-loadout">0</span>
+            <div id="inventory-info">
+                <strong>Inventory</strong><br>
+                Weapons: <span id="inv-weapon">0</span><br>
+                Armor: <span id="inv-armor">0</span><br>
+                Artifacts: <span id="inv-artifact">0</span>
+            </div>
+            <div id="equip-info-loadout"></div>
+            <button onclick="equipWeapon()">Equip Weapon</button>
+            <button onclick="equipArmor()">Equip Armor</button>
+            <button onclick="equipArtifact()">Equip Artifact</button>
+            <button id="shop-btn">🛒 Shop</button>
+            <button id="back-btn">🔙 Back</button>
+        </div>
+        <div id="shop-screen" class="hidden">
+            <h3>Shop</h3>
+            <button id="buy-weapon-btn" onclick="buyWeapon()">Buy Weapon (-10)</button>
+            <button id="buy-armor-btn" onclick="buyArmor()">Buy Armor (-10)</button>
+            <button id="buy-artifact-btn" onclick="buyArtifact()">Buy Artifact (-20)</button>
+            <div id="preview" class="preview"></div>
+            <button onclick="closeShop()">✖️ Close</button>
+        </div>
+        <button id="custom-btn">🧰 Customize Gear</button>
+        <button id="start-btn">⚔️ Start Battle</button>
+        <button id="boss-btn">👹 Boss Battle</button>
+    </div>
 
-function setButtons(enabled){
-    document.getElementById('attack-btn').disabled=!enabled;
-    document.getElementById('defend-btn').disabled=!enabled;
-    document.getElementById('special-btn').disabled=!enabled;
-}
+    <div id="custom-screen" class="hidden">
+        <h2>Customize Loadout</h2>
+        <div>
+            <strong>Weapons</strong>
+            <div id="weapon-list"></div>
+            <select id="weapon-select"></select>
+            <button id="equip-sel-weapon">Equip</button>
+        </div>
+        <div>
+            <strong>Armor</strong>
+            <div id="armor-list"></div>
+            <select id="armor-select"></select>
+            <button id="equip-sel-armor">Equip</button>
+        </div>
+        <div>
+            <strong>Artifacts</strong>
+            <div id="artifact-list"></div>
+            <select id="artifact-select"></select>
+            <button id="equip-sel-artifact">Equip</button>
+        </div>
+        <button id="custom-back">Back</button>
+    </div>
 
-function saveProgress(){
-    localStorage.setItem('aaCoins', coins);
-    localStorage.setItem('aaInv', JSON.stringify(inventory));
-    localStorage.setItem('aaXP', xp);
-    localStorage.setItem('aaLevel', level);
-}
-
-function loadProgress(){
-    const saved=localStorage.getItem('aaCoins');
-    if(saved) coins=parseInt(saved);
-    const savedXP=localStorage.getItem('aaXP');
-    if(savedXP) xp=parseInt(savedXP);
-    const savedLvl=localStorage.getItem('aaLevel');
-    if(savedLvl) level=parseInt(savedLvl);
-    const inv=localStorage.getItem('aaInv');
-    if(inv){
-        const data=JSON.parse(inv);
-        if(Array.isArray(data.weapon?.common)){
-            inventory=data;
-        }else{
-            inventory={
-                weapon:{common:Array(data.weapon).fill('Common Weapon'),rare:[],epic:[]},
-                armor:{common:Array(data.armor).fill('Common Armor'),rare:[],epic:[]},
-                artifact:{common:Array(data.artifact).fill('Common Artifact'),rare:[],epic:[]}
-            };
-        }
-    }
-}
-
-function updateCoins(){
-    const coinEl=document.getElementById('coins');
-    if(coinEl) coinEl.textContent=coins;
-    const el=document.getElementById('coins-loadout');
-    if(el) el.textContent=coins;
-    const lvl=document.getElementById('level');
-    const xpEl=document.getElementById('xp');
-    if(lvl) lvl.textContent=level;
-    if(xpEl) xpEl.textContent=xp;
-    saveProgress();
-    updateInventoryUI();
-}
-
-function updateInventoryUI(){
-    const w=document.getElementById('inv-weapon');
-    const a=document.getElementById('inv-armor');
-    const t=document.getElementById('inv-artifact');
-    if(w) w.textContent=`Common:${inventory.weapon.common.length} `+
-        `Rare:${inventory.weapon.rare.length} `+
-        `Epic:${inventory.weapon.epic.length}`;
-    if(a) a.textContent=`Common:${inventory.armor.common.length} `+
-        `Rare:${inventory.armor.rare.length} `+
-        `Epic:${inventory.armor.epic.length}`;
-    if(t) t.textContent=`Common:${inventory.artifact.common.length} `+
-        `Rare:${inventory.artifact.rare.length} `+
-        `Epic:${inventory.artifact.epic.length}`;
-}
-
-function updateEquipInfo(){
-    if(players.length){
-        const p=players[0];
-        const info=`Weapons: ${p.equipment.weapon.length}/${p.slots.weapon} `+
-        `Armor: ${p.equipment.armor.length}/${p.slots.armor} `+
-        `Artifacts: ${p.equipment.artifact.length}/${p.slots.artifact}`;
-        document.getElementById('equip-info').textContent=info;
-        const el=document.getElementById('equip-info-loadout');
-        if(el) el.textContent=info;
-    }
-}
-
-function updateLoadout(){
-    if(document.getElementById('loadout-stats')){
-        document.getElementById('loadout-stats').textContent=
-        `HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def} EN: ${players[0].energy}/${players[0].maxEnergy}`;
-    }
-}
-
-document.querySelectorAll('.avatar-grid button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-        if(!avatarsLoaded){
-            alert('Avatars are still loading. Please try again.');
-            return;
-        }
-        const avatar=btn.dataset.avatar;
-        const data=avatars[avatar];
-        if(!data) return;
-        players[0]={
-            ...data,
-            name:`Player (${data.emoji} ${avatar})`,
-            maxHp:data.hp,
-            maxEnergy:data.energy,
-            energy:data.energy,
-            equipment:{weapon:[],armor:[],artifact:[]},
-            slots:data.slots
-        };
-        document.body.className=backgrounds[avatar]||'';
-        showLoadout();
-    });
-});
-
-function showLoadout(){
-    document.getElementById('selection-screen').classList.add('hidden');
-    document.getElementById('loadout-screen').classList.remove('hidden');
-    document.getElementById('loadout-name').textContent=players[0].name;
-    document.getElementById('loadout-model').textContent=players[0].emoji;
-    document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
-    document.getElementById('lore').textContent=players[0].lore;
-    updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateInventoryUI();
-}
-
-function startBattle(){
-    document.getElementById('loadout-screen').classList.add('hidden');
-    document.getElementById('shop-screen').classList.add('hidden');
-    document.getElementById('victory-screen').classList.add('hidden');
-    document.getElementById('battle-screen').classList.remove('hidden');
-    const keys=Object.keys(avatars);
-    const enemyKey=keys[Math.floor(Math.random()*keys.length)];
-    players[1]={
-        ...avatars[enemyKey],
-        name:`CPU (${avatars[enemyKey].emoji} ${enemyKey})`,
-        maxHp:avatars[enemyKey].hp,
-        maxEnergy:avatars[enemyKey].energy,
-        energy:avatars[enemyKey].energy,
-        equipment:{weapon:[],armor:[],artifact:[]},
-        slots:avatars[enemyKey].slots
-    };
-    if(isBoss){
-        players[1].maxHp=Math.round(players[1].maxHp*2);
-        players[1].atk=Math.round(players[1].atk*1.5);
-        players[1].def=Math.round(players[1].def*1.5);
-        players[1].maxEnergy+=20;
-        isBoss=false;
-    }
-    players[0].hp=players[0].maxHp;
-    players[1].hp=players[1].maxHp;
-    players[0].energy=players[0].maxEnergy;
-    players[1].energy=players[1].maxEnergy;
-    current=0;
-    defending=[false,false];
-    defendMult=[1,1];
-    stun=[0,0];
-    poison=[0,0];
-    cooldown=[0,0];
-    cooldownBase=[3,3];
-    log.innerHTML='';
-    updateUI();
-    updateCoins();
-    updateEquipInfo();
-    logMsg(`Battle ${battleNumber} Start!`);
-    updateTurn();
-}
-
-function updateUI(){
-    for(let i=0;i<2;i++){
-        document.getElementById('p'+(i+1)+'-name').textContent=players[i].name;
-        document.getElementById('p'+(i+1)+'-model').textContent=players[i].emoji;
-        document.getElementById('p'+(i+1)+'-stats').textContent=`HP: ${Math.max(0,players[i].hp)}/${players[i].maxHp} ATK: ${players[i].atk} DEF: ${players[i].def} EN: ${players[i].energy}/${players[i].maxEnergy}`;
-        const p=players[i];
-        document.getElementById('p'+(i+1)+'-equip').textContent=
-            `Weapons: ${p.equipment.weapon.length}/${p.slots.weapon} `+
-            `Armor: ${p.equipment.armor.length}/${p.slots.armor} `+
-            `Artifacts: ${p.equipment.artifact.length}/${p.slots.artifact}`;
-        const ratio=Math.max(0,players[i].hp)/players[i].maxHp*100;
-        const bar=document.getElementById('p'+(i+1)+'-health');
-        bar.style.width=ratio+'%';
-        bar.style.background=ratio>50?'#4caf50':ratio>20?'#ffeb3b':'#f44336';
-        const eratio=Math.max(0,players[i].energy)/players[i].maxEnergy*100;
-        const ebar=document.getElementById('p'+(i+1)+'-energy');
-        if(ebar) ebar.style.width=eratio+'%';
-    }
-    updateEquipInfo();
-}
-
-function endTurn(){
-    for(let i=0;i<2;i++){
-        if(poison[i]>0){
-            players[i].hp-=5;
-            poison[i]--;
-            logMsg(`${players[i].name} takes 5 poison damage.`);
-        }
-    }
-    if(checkVictory()) { updateUI(); return; }
-    current=1-current;
-    defending[current]=false;
-    defendMult[current]=1;
-    if(cooldown[current]>0)cooldown[current]--;
-    updateUI();
-    const over=checkVictory();
-    if(!over){
-        updateTurn();
-    }
-}
-
-function cpuAction(){
-    if(cooldown[current]==0 && players[current].energy>=players[current].cost && Math.random()<0.5){
-        special();
-    }else if(Math.random()<0.6){
-        attack();
-    }else{
-        defend();
-    }
-}
-
-function updateTurn(){
-    document.getElementById('turn-indicator').textContent=`${players[current].name}'s Turn`;
-    setButtons(current===0);
-    if(stun[current]>0){
-        logMsg(`${players[current].name} is stunned and skips a turn.`);
-        stun[current]--;
-        endTurn();
-        return;
-    }
-    if(current===1){
-        setTimeout(cpuAction,500);
-    }
-}
-
-function attack(){
-    const attacker=players[current];
-    const defender=players[1-current];
-    if(Math.random()<0.05){
-        logMsg(`${defender.name} dodged the attack!`);
-        defending[current]=false;
-        endTurn();
-        return;
-    }
-    let defense=defender.def;
-    let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
-    if(defending[1-current]){
-        dmg=Math.round(dmg*defendMult[1-current]);
-    }
-    let crit=false;
-    if(Math.random()<0.15){
-        dmg*=2;
-        crit=true;
-    }
-    defender.hp-=dmg;
-    logMsg(`${attacker.name} attacks for ${dmg} damage.${crit?' Critical hit!':''}`);
-    if(checkVictory()) return;
-    defending[current]=false;
-    endTurn();
-}
-
-function defend(){
-    defending[current]=true;
-    const roll=Math.random();
-    if(roll<0.02){
-        defendMult[current]=0;
-        logMsg(`${players[current].name} prepares a perfect block!`);
-    }else if(roll<0.10){
-        defendMult[current]=0.25;
-        logMsg(`${players[current].name} braces to block 75% damage.`);
-    }else if(roll<0.35){
-        defendMult[current]=0.5;
-        logMsg(`${players[current].name} braces to block 50% damage.`);
-    }else{
-        defendMult[current]=0.75;
-        logMsg(`${players[current].name} braces to block 25% damage.`);
-    }
-    endTurn();
-}
-
-function special(){
-    if(cooldown[current]>0){
-        logMsg(`Special on cooldown: ${cooldown[current]} turn(s) left.`);
-        return;
-    }
-    const attacker=players[current];
-    if(attacker.energy<attacker.maxEnergy*0.5){
-        logMsg('Not enough energy.');
-        return;
-    }
-    attacker.energy=Math.max(0,attacker.energy - Math.floor(attacker.maxEnergy*0.5));
-    const defender=players[1-current];
-    if(Math.random()<0.05){
-        logMsg(`${defender.name} dodged the special attack!`);
-        cooldown[current]=cooldownBase[current];
-        defending[current]=false;
-        endTurn();
-        return;
-    }
-    const name=attacker.name;
-    if(name.includes('Knight')){
-        let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
-        if(defending[1-current]){
-            dmg=Math.round(dmg*defendMult[1-current]);
-        }
-        if(Math.random()<0.15){dmg*=2;logMsg('Critical hit!');}
-        defender.hp-=dmg;
-        stun[1-current]=1;
-        logMsg(`${attacker.name} uses Shield Bash for ${dmg} damage! Enemy stunned.`);
-        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
-    }else if(name.includes('Mage')){
-        if(Math.random()<0.7){
-            let defense=defender.def;
-            let dmg=Math.max(10,Math.round(attacker.atk*2 - defense/2));
-            if(defending[1-current]){
-                dmg=Math.round(dmg*defendMult[1-current]);
-            }
-            if(Math.random()<0.15){dmg*=2;logMsg('Critical hit!');}
-            defender.hp-=dmg;
-            logMsg(`${attacker.name} casts Fireball for ${dmg} damage.`);
-            if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
-        }else{
-            logMsg(`${attacker.name}'s Fireball missed!`);
-        }
-    }else if(name.includes('Rogue')){
-        let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
-        if(defending[1-current]){
-            dmg=Math.round(dmg*defendMult[1-current]);
-        }
-        if(Math.random()<0.15){dmg*=2;logMsg('Critical hit!');}
-        defender.hp-=dmg;
-        poison[1-current]=3;
-        logMsg(`${attacker.name} uses Poison Dagger for ${dmg} damage. Enemy poisoned!`);
-        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
-    }
-    cooldown[current]=cooldownBase[current];
-    defending[current]=false;
-    endTurn();
-}
-
-function checkVictory(){
-    if(players[0].hp<=0||players[1].hp<=0){
-        document.getElementById('battle-screen').classList.add('hidden');
-        document.getElementById('victory-screen').classList.remove('hidden');
-        document.getElementById('winner').textContent=`${players[0].hp<=0?players[1].name:players[0].name} Wins!`;
-        const playerWon=players[1].hp<=0;
-        if(playerWon){
-            coins+=20;
-            cpuCoins+=10;
-            logMsg('You earned 20 coins!');
-            tryLoot();
-            addXP(50);
-            document.getElementById('next-btn').classList.remove('hidden');
-            showConfetti();
-        }else{
-            coins+=10;
-            cpuCoins+=20;
-            logMsg('You earned 10 coins.');
-            document.getElementById('next-btn').classList.add('hidden');
-        }
-        updateCoins();
-        updateEquipInfo();
-        return true;
-    }
-    return false;
-}
-
-function nextBattle(){
-    battleNumber++;
-    document.getElementById('next-btn').classList.add('hidden');
-    startBattle();
-}
-
-function equipWeapon(){
-    if(players[0].equipment.weapon.length>=players[0].slots.weapon){
-        logMsg('No weapon slots left.');
-        return;
-    }
-    let rarity='';
-    let name='';
-    if(inventory.weapon.epic.length){
-        name=inventory.weapon.epic.pop(); rarity='epic'; players[0].atk+=4;
-    }else if(inventory.weapon.rare.length){
-        name=inventory.weapon.rare.pop(); rarity='rare'; players[0].atk+=3;
-    }else if(inventory.weapon.common.length){
-        name=inventory.weapon.common.pop(); rarity='common'; players[0].atk+=2;
-    }
-    if(rarity){
-        players[0].equipment.weapon.push(name);
-        logMsg(`Equipped ${name}.`);
-        updateCoins();
-        updateUI();
-        updateEquipInfo();
-        updateLoadout();
-    }else{
-        logMsg('No weapons in inventory.');
-    }
-}
-
-function equipArmor(){
-    if(players[0].equipment.armor.length>=players[0].slots.armor){
-        logMsg('No armor slots left.');
-        return;
-    }
-    let rarity='';
-    let name='';
-    if(inventory.armor.epic.length){
-        name=inventory.armor.epic.pop(); rarity='epic'; players[0].def+=4;
-    }else if(inventory.armor.rare.length){
-        name=inventory.armor.rare.pop(); rarity='rare'; players[0].def+=3;
-    }else if(inventory.armor.common.length){
-        name=inventory.armor.common.pop(); rarity='common'; players[0].def+=2;
-    }
-    if(rarity){
-        players[0].equipment.armor.push(name);
-        logMsg(`Equipped ${name}.`);
-        updateCoins();
-        updateUI();
-        updateEquipInfo();
-        updateLoadout();
-    }else{
-        logMsg('No armor in inventory.');
-    }
-}
-
-function equipArtifact(){
-    if(players[0].equipment.artifact.length>=players[0].slots.artifact){
-        logMsg('No artifact slots left.');
-        return;
-    }
-    let rarity='';
-    let name='';
-    if(inventory.artifact.epic.length){
-        name=inventory.artifact.epic.pop(); rarity='epic'; cooldownBase[0]=Math.max(1,cooldownBase[0]-3); players[0].maxHp+=30; players[0].maxEnergy+=15; players[0].energy=players[0].maxEnergy;
-    }else if(inventory.artifact.rare.length){
-        name=inventory.artifact.rare.pop(); rarity='rare'; cooldownBase[0]=Math.max(1,cooldownBase[0]-2); players[0].maxHp+=20; players[0].maxEnergy+=10; players[0].energy=players[0].maxEnergy;
-    }else if(inventory.artifact.common.length){
-        name=inventory.artifact.common.pop(); rarity='common'; cooldownBase[0]=Math.max(1,cooldownBase[0]-1); players[0].maxHp+=10; players[0].maxEnergy+=5; players[0].energy=players[0].maxEnergy;
-    }
-    if(rarity){
-        players[0].equipment.artifact.push(name);
-        logMsg(`Equipped ${name}.`);
-        updateCoins();
-        updateEquipInfo();
-        updateLoadout();
-        updateUI();
-    }else{
-        logMsg('No artifacts in inventory.');
-    }
-}
-
-function randomRarity(){
-    const r=Math.random();
-    if(r<0.1) return 'epic';
-    if(r<0.4) return 'rare';
-    return 'common';
-}
-
-function randomItemName(type,rarity){
-    const arr=itemNames[type][rarity];
-    return arr[Math.floor(Math.random()*arr.length)];
-}
-
-function previewItem(type){
-    const r=randomRarity();
-    document.getElementById('preview').textContent=`${randomItemName(type,r)} (${r})`;
-}
-
-function clearPreview(){
-    document.getElementById('preview').textContent='';
-}
-
-function buyWeapon(){
-    if(coins>=10){
-        coins-=10;
-        const r=randomRarity();
-        const name=randomItemName('weapon',r);
-        inventory.weapon[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
-        updateCoins();
-    }else{
-        logMsg('Not enough coins.');
-    }
-}
-
-function buyArmor(){
-    if(coins>=10){
-        coins-=10;
-        const r=randomRarity();
-        const name=randomItemName('armor',r);
-        inventory.armor[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
-        updateCoins();
-    }else{
-        logMsg('Not enough coins.');
-    }
-}
-
-function buyArtifact(){
-    if(coins>=20){
-        coins-=20;
-        const r=randomRarity();
-        const name=randomItemName('artifact',r);
-        inventory.artifact[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
-        updateCoins();
-    }else{
-        logMsg('Not enough coins.');
-    }
-}
-
-function giveRandomLoot(){
-    const typeRoll=Math.random();
-    const rarity=randomRarity();
-    if(typeRoll<0.33){
-        const name=randomItemName('weapon',rarity);
-        inventory.weapon[rarity].push(name);
-        logMsg(`Found ${name}!`);
-    }else if(typeRoll<0.66){
-        const name=randomItemName('armor',rarity);
-        inventory.armor[rarity].push(name);
-        logMsg(`Found ${name}!`);
-    }else{
-        const name=randomItemName('artifact',rarity);
-        inventory.artifact[rarity].push(name);
-        logMsg(`Found ${name}!`);
-    }
-    updateCoins();
-}
-
-function tryLoot(){
-    if(Math.random()<0.3){
-        giveRandomLoot();
-    }else{
-        logMsg('No drops this time.');
-    }
-}
-
-function addXP(amount){
-    xp+=amount;
-    const needed=level*100;
-    if(xp>=needed){
-        xp-=needed;
-        level++;
-        players[0].maxHp+=10;
-        players[0].maxEnergy+=5;
-        logMsg(`Level up! Now level ${level}.`);
-    }
-    updateCoins();
-}
-
-function closeShop(){
-    document.getElementById('shop-screen').classList.add('hidden');
-}
-
-function showCustom(){
-    document.getElementById('loadout-screen').classList.add('hidden');
-    document.getElementById('custom-screen').classList.remove('hidden');
-    populateCustom();
-}
-
-function hideCustom(){
-    document.getElementById('custom-screen').classList.add('hidden');
-    document.getElementById('loadout-screen').classList.remove('hidden');
-}
-
-function populateCustom(){
-    const p=players[0];
-    document.getElementById('weapon-list').textContent=p.equipment.weapon.join(', ')||'None';
-    document.getElementById('armor-list').textContent=p.equipment.armor.join(', ')||'None';
-    document.getElementById('artifact-list').textContent=p.equipment.artifact.join(', ')||'None';
-
-    const wSel=document.getElementById('weapon-select');
-    const aSel=document.getElementById('armor-select');
-    const tSel=document.getElementById('artifact-select');
-    const fill=(sel,arr)=>{ sel.innerHTML=''; arr.forEach(n=>{const o=document.createElement('option');o.textContent=n;sel.appendChild(o);}); };
-    fill(wSel,[...inventory.weapon.common,...inventory.weapon.rare,...inventory.weapon.epic]);
-    fill(aSel,[...inventory.armor.common,...inventory.armor.rare,...inventory.armor.epic]);
-    fill(tSel,[...inventory.artifact.common,...inventory.artifact.rare,...inventory.artifact.epic]);
-}
-
-function equipSelected(type){
-    const sel=document.getElementById(type+'-select');
-    const name=sel.value;
-    if(!name) return;
-    const inv=inventory[type];
-    let rarity='';
-    for(const r of ['epic','rare','common']){
-        const idx=inv[r].indexOf(name);
-        if(idx>-1){inv[r].splice(idx,1);rarity=r;break;}
-    }
-    if(!rarity){return;}
-    const p=players[0];
-    if(p.equipment[type].length>=p.slots[type]){logMsg('No '+type+' slots left.'); return;}
-    p.equipment[type].push(name);
-    if(type==='weapon') p.atk+=rarity==='epic'?4:rarity==='rare'?3:2;
-    if(type==='armor') p.def+=rarity==='epic'?4:rarity==='rare'?3:2;
-    if(type==='artifact'){
-        if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);p.maxHp+=30;p.maxEnergy+=15;}
-        else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);p.maxHp+=20;p.maxEnergy+=10;}
-        else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);p.maxHp+=10;p.maxEnergy+=5;}
-        p.energy=p.maxEnergy;
-    }
-    populateCustom();
-    updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateUI();
-}
-
-function goBack(){
-    document.getElementById('loadout-screen').classList.add('hidden');
-    document.getElementById('selection-screen').classList.remove('hidden');
-}
-
-function startBossBattle(){
-    isBoss=true;
-    startBattle();
-}
-
-function showConfetti(){
-    for(let i=0;i<30;i++){
-        const span=document.createElement('span');
-        span.className='confetti';
-        span.textContent='🎉';
-        span.style.left=Math.random()*100+'vw';
-        span.style.animationDelay=Math.random()*0.5+'s';
-        document.body.appendChild(span);
-        setTimeout(()=>span.remove(),1000);
-    }
-}
-
-document.getElementById('attack-btn').onclick=attack;
-document.getElementById('defend-btn').onclick=defend;
-document.getElementById('special-btn').onclick=special;
-document.getElementById('start-btn').onclick=startBattle;
-document.getElementById('next-btn').onclick=nextBattle;
-document.getElementById('shop-btn').onclick=()=>{
-    document.getElementById('shop-screen').classList.toggle('hidden');
-};
-document.getElementById('back-btn').onclick=goBack;
-document.getElementById('boss-btn').onclick=startBossBattle;
-document.getElementById('custom-btn').onclick=showCustom;
-document.getElementById('custom-back').onclick=hideCustom;
-document.getElementById('equip-sel-weapon').onclick=()=>equipSelected('weapon');
-document.getElementById('equip-sel-armor').onclick=()=>equipSelected('armor');
-document.getElementById('equip-sel-artifact').onclick=()=>equipSelected('artifact');
-document.getElementById('buy-weapon-btn').addEventListener('mouseenter',()=>previewItem('weapon'));
-document.getElementById('buy-weapon-btn').addEventListener('mouseleave',clearPreview);
-document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previewItem('armor'));
-document.getElementById('buy-armor-btn').addEventListener('mouseleave',clearPreview);
-document.getElementById('buy-artifact-btn').addEventListener('mouseenter',()=>previewItem('artifact'));
-document.getElementById('buy-artifact-btn').addEventListener('mouseleave',clearPreview);
+    <div id="battle-screen" class="hidden">
+        <h2 id="turn-indicator"></h2>
+        <div class="battle-area">
+            <div class="player" id="player2">
+                <h3 id="p2-name"></h3>
+                <div class="model" id="p2-model"></div>
+                <div class="health-bar"><div class="health-inner" id="p2-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p2-energy"></div></div>
+                <p id="p2-stats"></p>
+                <p id="p2-equip"></p>
+            </div>
+            <div class="player" id="player1">
+                <h3 id="p1-name"></h3>
+                <div class="model" id="p1-model"></div>
+                <div class="health-bar"><div class="health-inner" id="p1-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p1-energy"></div></div>
+                <p id="p1-stats"></p>
+                <p id="p1-equip"></p>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="attack-btn">👊 Attack</button>
+            <button id="defend-btn">🛡️ Defend</button>
+            <button id="special-btn">✨ Special</button>
+        </div>
+        <div class="log" id="log"></div>
+        </div>
+    <div id="victory-screen" class="hidden end-screen">
+        <h1 id="winner"></h1>
+        <button id="next-btn" class="hidden">▶️ Next Battle</button>
+        <button onclick="location.reload()">🔄 Restart</button>
+    </div>
+    <div id="defeat-screen" class="hidden end-screen">
+        <h1 id="loser"></h1>
+        <button onclick="location.reload()">🔄 Restart</button>
+    </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
