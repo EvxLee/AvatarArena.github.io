@@ -1,0 +1,13 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+
+# Dependency directories
+node_modules/
+
+# Python cache
+__pycache__/
