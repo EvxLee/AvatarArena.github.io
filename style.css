@@ -28,24 +28,21 @@ button{
 }
 .hidden{display:none;}
 .avatar-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:1fr 1fr;
+    display:flex;
+    justify-content:space-around;
     gap:20px;
-    justify-items:center;
-    max-width:500px;
-    margin:0 auto;
-    aspect-ratio:1/1;
+    max-width:800px;
+    margin:0 auto 20px auto;
+    flex-wrap:wrap;
 }
 .avatar-option{
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    width:100%;
-    margin-bottom:20px;
+    width:30%;
+    min-width:150px;
 }
-.avatar-option.empty{visibility:hidden;}
 .avatar-img{
     width:150px;
     height:150px;
