@@ -41,4 +41,4 @@ Simply open `index.html` in any modern browser or visit the live page below.
 Use the Attack, Defend and Special buttons to defeat the CPU opponent and earn
 rewards.
 
-Play the latest build at: <https://test.github.io/>
+Play the latest build at: <https://evxlee.github.io/Test.github.io/>
