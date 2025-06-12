@@ -19,14 +19,14 @@ button{
 .container{
     max-width:900px;
     width:90%;
-    height:95vh;
+    min-height:90vh;
     margin:20px auto;
     padding:15px;
     box-sizing:border-box;
     background:#fff;
     color:#000;
 }
-.hidden{display:none;}
+.hidden{display:none!important;}
 .avatar-grid{
     display:flex;
     justify-content:space-around;
@@ -99,7 +99,14 @@ button{
 #battle-screen{
     display:flex;
     flex-direction:column;
-    height:100%;
+    min-height:100%;
+}
+.actions{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-top:10px;
 }
 .actions button{
     padding:15px 40px;
@@ -111,7 +118,7 @@ button{
 }
 .log{
     text-align:left;
-    height:120px;
+    height:180px;
     overflow-y:auto;
     border:2px solid #333;
     padding:10px;
