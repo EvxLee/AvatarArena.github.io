@@ -132,7 +132,7 @@ function updateLoadout(){
     }
 }
 
-document.querySelectorAll('.avatar-list button').forEach(btn=>{
+document.querySelectorAll('.avatar-grid button').forEach(btn=>{
     btn.addEventListener('click',()=>{
         if(!avatarsLoaded){
             alert('Avatars are still loading. Please try again.');
@@ -354,7 +354,7 @@ function special(){
     }else if(name.includes('Mage')){
         if(Math.random()<0.7){
             let defense=defender.def;
-            let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+            let dmg=Math.max(10,Math.round(attacker.atk*2 - defense/2));
             if(defending[1-current]){
                 dmg=Math.round(dmg*defendMult[1-current]);
             }
