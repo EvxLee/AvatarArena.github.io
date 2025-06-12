@@ -239,6 +239,7 @@ function endTurn(){
             logMsg(`${players[i].name} takes 5 poison damage.`);
         }
     }
+    if(checkVictory()) { updateUI(); return; }
     current=1-current;
     defending[current]=false;
     defendMult[current]=1;
@@ -295,6 +296,7 @@ function attack(){
     }
     defender.hp-=dmg;
     logMsg(`${attacker.name} attacks for ${dmg} damage.${crit?' Critical hit!':''}`);
+    if(checkVictory()) return;
     defending[current]=false;
     endTurn();
 }
@@ -348,16 +350,18 @@ function special(){
         defender.hp-=dmg;
         stun[1-current]=1;
         logMsg(`${attacker.name} uses Shield Bash for ${dmg} damage! Enemy stunned.`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }else if(name.includes('Mage')){
         if(Math.random()<0.7){
             let defense=defender.def;
-            let dmg=Math.max(10,Math.round(attacker.atk*2 - defense/2));
+            let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
             if(defending[1-current]){
                 dmg=Math.round(dmg*defendMult[1-current]);
             }
             if(Math.random()<0.15){dmg*=2;logMsg('Critical hit!');}
             defender.hp-=dmg;
             logMsg(`${attacker.name} casts Fireball for ${dmg} damage.`);
+            if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
         }else{
             logMsg(`${attacker.name}'s Fireball missed!`);
         }
@@ -371,6 +375,7 @@ function special(){
         defender.hp-=dmg;
         poison[1-current]=3;
         logMsg(`${attacker.name} uses Poison Dagger for ${dmg} damage. Enemy poisoned!`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }
     cooldown[current]=cooldownBase[current];
     defending[current]=false;
