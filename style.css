@@ -19,11 +19,12 @@ button{
 .container{
     max-width:none;
     width:100%;
-    height:100vh;
+    height:95vh;
     margin:0;
-    padding:20px;
+    padding:15px;
     box-sizing:border-box;
     background:#fff;
+    color:#000;
 }
 .hidden{display:none;}
 .avatar-list{
@@ -172,4 +173,16 @@ body.rogue-bg{
     .avatar-list button{
         font-size:20px;
     }
+}
+
+#mobile-outline{
+    position:fixed;
+    top:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:375px;
+    height:667px;
+    border:2px dashed #f00;
+    pointer-events:none;
+    z-index:1000;
 }
