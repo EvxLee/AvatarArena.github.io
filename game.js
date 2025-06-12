@@ -1,7 +1,8 @@
 let avatars = {};
+let avatarsLoaded = false;
 fetch("data/avatars.json")
   .then(r => r.json())
-  .then(data => { avatars = data; });
+  .then(data => { avatars = data; avatarsLoaded = true; });
 const itemNames={
     weapon:{
         common:['Rusty Sword','Wooden Club','Simple Dagger'],
@@ -131,16 +132,22 @@ function updateLoadout(){
 
 document.querySelectorAll('.avatar-list button').forEach(btn=>{
     btn.addEventListener('click',()=>{
+        if(!avatarsLoaded){
+            alert('Avatars are still loading. Please try again.');
+            return;
+        }
         const avatar=btn.dataset.avatar;
+        const data=avatars[avatar];
+        if(!data) return;
         players[0]={
-            ...avatars[avatar],
-            name:`Player (${avatars[avatar].emoji} ${avatar})`,
-            maxHp:avatars[avatar].hp,
-            maxEnergy:avatars[avatar].energy,
-            energy:avatars[avatar].energy,
-            weapons:0,armor:0,artifacts:0,slots:avatars[avatar].slots
+            ...data,
+            name:`Player (${data.emoji} ${avatar})`,
+            maxHp:data.hp,
+            maxEnergy:data.energy,
+            energy:data.energy,
+            weapons:0,armor:0,artifacts:0,slots:data.slots
         };
-        document.body.className=backgrounds[avatar];
+        document.body.className=backgrounds[avatar]||'';
         showLoadout();
     });
 });
@@ -437,3 +444,183 @@ function equipArmor(){
     }else if(inventory.armor.common.length){
         name=inventory.armor.common.pop(); rarity='common'; players[0].def+=2;
     }
+    if(rarity){
+        players[0].armor++;
+        logMsg(`Equipped ${name}.`);
+        updateCoins();
+        updateUI();
+        updateEquipInfo();
+        updateLoadout();
+    }else{
+        logMsg('No armor in inventory.');
+    }
+}
+
+function equipArtifact(){
+    if(players[0].artifacts>=players[0].slots.artifact){
+        logMsg('No artifact slots left.');
+        return;
+    }
+    let rarity='';
+    let name='';
+    if(inventory.artifact.epic.length){
+        name=inventory.artifact.epic.pop(); rarity='epic'; cooldownBase[0]=Math.max(1,cooldownBase[0]-3); players[0].maxHp+=30; players[0].maxEnergy+=15; players[0].energy=players[0].maxEnergy;
+    }else if(inventory.artifact.rare.length){
+        name=inventory.artifact.rare.pop(); rarity='rare'; cooldownBase[0]=Math.max(1,cooldownBase[0]-2); players[0].maxHp+=20; players[0].maxEnergy+=10; players[0].energy=players[0].maxEnergy;
+    }else if(inventory.artifact.common.length){
+        name=inventory.artifact.common.pop(); rarity='common'; cooldownBase[0]=Math.max(1,cooldownBase[0]-1); players[0].maxHp+=10; players[0].maxEnergy+=5; players[0].energy=players[0].maxEnergy;
+    }
+    if(rarity){
+        players[0].artifacts++;
+        logMsg(`Equipped ${name}.`);
+        updateCoins();
+        updateEquipInfo();
+        updateLoadout();
+        updateUI();
+    }else{
+        logMsg('No artifacts in inventory.');
+    }
+}
+
+function randomRarity(){
+    const r=Math.random();
+    if(r<0.1) return 'epic';
+    if(r<0.4) return 'rare';
+    return 'common';
+}
+
+function randomItemName(type,rarity){
+    const arr=itemNames[type][rarity];
+    return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function previewItem(type){
+    const r=randomRarity();
+    document.getElementById('preview').textContent=`${randomItemName(type,r)} (${r})`;
+}
+
+function clearPreview(){
+    document.getElementById('preview').textContent='';
+}
+
+function buyWeapon(){
+    if(coins>=10){
+        coins-=10;
+        const r=randomRarity();
+        const name=randomItemName('weapon',r);
+        inventory.weapon[r].push(name);
+        logMsg(`Bought ${name} (${r}).`);
+        updateCoins();
+    }else{
+        logMsg('Not enough coins.');
+    }
+}
+
+function buyArmor(){
+    if(coins>=10){
+        coins-=10;
+        const r=randomRarity();
+        const name=randomItemName('armor',r);
+        inventory.armor[r].push(name);
+        logMsg(`Bought ${name} (${r}).`);
+        updateCoins();
+    }else{
+        logMsg('Not enough coins.');
+    }
+}
+
+function buyArtifact(){
+    if(coins>=20){
+        coins-=20;
+        const r=randomRarity();
+        const name=randomItemName('artifact',r);
+        inventory.artifact[r].push(name);
+        logMsg(`Bought ${name} (${r}).`);
+        updateCoins();
+    }else{
+        logMsg('Not enough coins.');
+    }
+}
+
+function giveRandomLoot(){
+    const typeRoll=Math.random();
+    const rarity=randomRarity();
+    if(typeRoll<0.33){
+        const name=randomItemName('weapon',rarity);
+        inventory.weapon[rarity].push(name);
+        logMsg(`Found ${name}!`);
+    }else if(typeRoll<0.66){
+        const name=randomItemName('armor',rarity);
+        inventory.armor[rarity].push(name);
+        logMsg(`Found ${name}!`);
+    }else{
+        const name=randomItemName('artifact',rarity);
+        inventory.artifact[rarity].push(name);
+        logMsg(`Found ${name}!`);
+    }
+    updateCoins();
+}
+
+function tryLoot(){
+    if(Math.random()<0.3){
+        giveRandomLoot();
+    }else{
+        logMsg('No drops this time.');
+    }
+}
+
+function addXP(amount){
+    xp+=amount;
+    const needed=level*100;
+    if(xp>=needed){
+        xp-=needed;
+        level++;
+        players[0].maxHp+=10;
+        players[0].maxEnergy+=5;
+        logMsg(`Level up! Now level ${level}.`);
+    }
+    updateCoins();
+}
+
+function closeShop(){
+    document.getElementById('shop-screen').classList.add('hidden');
+}
+
+function goBack(){
+    document.getElementById('loadout-screen').classList.add('hidden');
+    document.getElementById('selection-screen').classList.remove('hidden');
+}
+
+function startBossBattle(){
+    isBoss=true;
+    startBattle();
+}
+
+function showConfetti(){
+    for(let i=0;i<30;i++){
+        const span=document.createElement('span');
+        span.className='confetti';
+        span.textContent='🎉';
+        span.style.left=Math.random()*100+'vw';
+        span.style.animationDelay=Math.random()*0.5+'s';
+        document.body.appendChild(span);
+        setTimeout(()=>span.remove(),1000);
+    }
+}
+
+document.getElementById('attack-btn').onclick=attack;
+document.getElementById('defend-btn').onclick=defend;
+document.getElementById('special-btn').onclick=special;
+document.getElementById('start-btn').onclick=startBattle;
+document.getElementById('next-btn').onclick=nextBattle;
+document.getElementById('shop-btn').onclick=()=>{
+    document.getElementById('shop-screen').classList.toggle('hidden');
+};
+document.getElementById('back-btn').onclick=goBack;
+document.getElementById('boss-btn').onclick=startBossBattle;
+document.getElementById('buy-weapon-btn').addEventListener('mouseenter',()=>previewItem('weapon'));
+document.getElementById('buy-weapon-btn').addEventListener('mouseleave',clearPreview);
+document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previewItem('armor'));
+document.getElementById('buy-armor-btn').addEventListener('mouseleave',clearPreview);
+document.getElementById('buy-artifact-btn').addEventListener('mouseenter',()=>previewItem('artifact'));
+document.getElementById('buy-artifact-btn').addEventListener('mouseleave',clearPreview);
