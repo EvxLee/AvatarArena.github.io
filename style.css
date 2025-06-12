@@ -1,0 +1,99 @@
+body{
+    font-family:Verdana,Arial,Helvetica,sans-serif;
+    background:linear-gradient(#8bc6ec,#9599E2);
+    margin:0;
+    padding:0;
+    text-align:center;
+}
+.container{
+    max-width:900px;
+    margin:30px auto;
+    padding:20px;
+    background:#fff;
+    border-radius:10px;
+    border:4px solid #333;
+    box-shadow:0 0 10px #0003;
+}
+.hidden{display:none;}
+.avatar-list button{
+    margin:5px;
+    padding:10px 20px;
+    font-size:16px;
+    border:2px solid #333;
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+}
+.avatar-list button:hover{background:#eee;}
+.battle-area{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+.player{
+    width:45%;
+    border:2px solid #333;
+    border-radius:8px;
+    padding:10px;
+    background:linear-gradient(#fff,#e0e0e0);
+}
+.health-bar{
+    height:20px;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:5px;
+}
+.health-inner{
+    height:100%;
+    background:#4caf50;
+    width:100%;
+    transition:width 0.3s;
+}
+.actions button{
+    margin:5px;
+    padding:10px 20px;
+    background:#fff;
+    border:2px solid #333;
+    border-radius:8px;
+    cursor:pointer;
+}
+.actions button:hover{background:#eee;}
+.actions button:disabled{
+    opacity:0.5;
+    cursor:default;
+}
+.log{
+    text-align:left;
+    height:150px;
+    overflow-y:auto;
+    border:2px solid #333;
+    padding:10px;
+    margin-top:20px;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:inset 0 0 5px #0003;
+}
+.model{
+    font-size:64px;
+    margin-bottom:5px;
+}
+#coins-area{
+    margin-top:10px;
+}
+#coins-area button{
+    margin:0 5px;
+}
+#coins-area-loadout{
+    margin-top:10px;
+}
+#coins-area-loadout button{
+    margin:0 5px;
+}
+#shop-screen{
+    margin-top:10px;
+    border:2px solid #333;
+    padding:10px;
+    border-radius:8px;
+    background:#f7f7f7;
+}
