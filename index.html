@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="mobile-outline"></div>
 <div class="container">
     <div id="selection-screen">
         <h1>Choose Your Avatar</h1>
@@ -33,7 +34,7 @@
         <p id="lore"></p>
         <p>Level <span id="level">1</span> - XP: <span id="xp">0</span></p>
         <div id="coins-area-loadout">
-            Coins: <span id="coins-loadout">0</span>
+            🪙 <span id="coins-loadout">0</span>
             <div id="inventory-info">
                 <strong>Inventory</strong><br>
                 Weapons: <span id="inv-weapon">0</span><br>
@@ -86,7 +87,7 @@
         </div>
         <div class="log" id="log"></div>
         <div id="coins-area">
-            Coins: <span id="coins">0</span>
+            🪙 <span id="coins">0</span>
             <button onclick="equipWeapon()">Add Weapon (+2 ATK, -10)</button>
             <button onclick="equipArmor()">Add Armor (+2 DEF, -10)</button>
             <button onclick="equipArtifact()">Add Artifact (-1 CD, -20)</button>
