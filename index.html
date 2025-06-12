@@ -56,21 +56,37 @@
             <div id="preview" class="preview"></div>
             <button onclick="closeShop()">✖️ Close</button>
         </div>
+        <button id="custom-btn">🧰 Customize Gear</button>
         <button id="start-btn">⚔️ Start Battle</button>
         <button id="boss-btn">👹 Boss Battle</button>
+    </div>
+
+    <div id="custom-screen" class="hidden">
+        <h2>Customize Loadout</h2>
+        <div>
+            <strong>Weapons</strong>
+            <div id="weapon-list"></div>
+            <select id="weapon-select"></select>
+            <button id="equip-sel-weapon">Equip</button>
+        </div>
+        <div>
+            <strong>Armor</strong>
+            <div id="armor-list"></div>
+            <select id="armor-select"></select>
+            <button id="equip-sel-armor">Equip</button>
+        </div>
+        <div>
+            <strong>Artifacts</strong>
+            <div id="artifact-list"></div>
+            <select id="artifact-select"></select>
+            <button id="equip-sel-artifact">Equip</button>
+        </div>
+        <button id="custom-back">Back</button>
     </div>
 
     <div id="battle-screen" class="hidden">
         <h2 id="turn-indicator"></h2>
         <div class="battle-area">
-            <div class="player" id="player1">
-                <h3 id="p1-name"></h3>
-                <div class="model" id="p1-model"></div>
-                <div class="health-bar"><div class="health-inner" id="p1-health"></div></div>
-                <div class="energy-bar"><div class="energy-inner" id="p1-energy"></div></div>
-                <p id="p1-stats"></p>
-                <p id="p1-equip"></p>
-            </div>
             <div class="player" id="player2">
                 <h3 id="p2-name"></h3>
                 <div class="model" id="p2-model"></div>
@@ -79,6 +95,14 @@
                 <p id="p2-stats"></p>
                 <p id="p2-equip"></p>
             </div>
+            <div class="player" id="player1">
+                <h3 id="p1-name"></h3>
+                <div class="model" id="p1-model"></div>
+                <div class="health-bar"><div class="health-inner" id="p1-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p1-energy"></div></div>
+                <p id="p1-stats"></p>
+                <p id="p1-equip"></p>
+            </div>
         </div>
         <div class="actions">
             <button id="attack-btn">👊 Attack</button>
@@ -86,15 +110,7 @@
             <button id="special-btn">✨ Special</button>
         </div>
         <div class="log" id="log"></div>
-        <div id="coins-area">
-            🪙 <span id="coins">0</span>
-            <button onclick="equipWeapon()">Add Weapon (+2 ATK, -10)</button>
-            <button onclick="equipArmor()">Add Armor (+2 DEF, -10)</button>
-            <button onclick="equipArtifact()">Add Artifact (-1 CD, -20)</button>
-            <div id="equip-info"></div>
         </div>
-    </div>
-
     <div id="victory-screen" class="hidden">
         <h1 id="winner"></h1>
         <button id="next-btn" class="hidden">▶️ Next Battle</button>
