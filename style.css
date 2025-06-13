@@ -158,7 +158,7 @@ button{
 }
 #coin-display{
     position:absolute;
-    top:60px;
+    top:55px;
     right:10px;
     color:#d4af37;
     font-weight:bold;
@@ -245,14 +245,5 @@ body.rogue-bg{
     .avatar-list button{
         font-size:20px;
     }
-    .battle-area{
-        flex-direction:column;
-    }
-    .player{
-        width:70%;
-        margin-bottom:20px;
-    }
-    .battle-img{
-        height:180px;
-    }
+    /* Keep horizontal layout on small screens */
 }
