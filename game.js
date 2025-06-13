@@ -48,6 +48,7 @@ let level=1;
 let cpuCoins=0;
 let battleNumber=1;
 let isBoss=false;
+let currentBattleIsBoss=false;
 const log=document.getElementById('log');
 function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
 
@@ -181,9 +182,14 @@ function startBattle(){
     document.getElementById('battle-screen').classList.remove('hidden');
     const keys=Object.keys(avatars);
     const enemyKey=keys[Math.floor(Math.random()*keys.length)];
+    currentBattleIsBoss=isBoss;
+    const baseName=currentBattleIsBoss?(
+        enemyKey==='Rogue'? 'Renegade Rogue':
+        enemyKey==='Knight'? 'Mega Knight':'Master Mage'
+    ):`CPU (${avatars[enemyKey].emoji} ${enemyKey})`;
     players[1]={
         ...avatars[enemyKey],
-        name:`CPU (${avatars[enemyKey].emoji} ${enemyKey})`,
+        name:baseName,
         maxHp:avatars[enemyKey].hp,
         maxEnergy:avatars[enemyKey].energy,
         energy:avatars[enemyKey].energy,
@@ -191,7 +197,7 @@ function startBattle(){
         equipment:{weapon:[],armor:[],artifact:[]},
         slots:avatars[enemyKey].slots
     };
-    if(isBoss){
+    if(currentBattleIsBoss){
         players[1].maxHp=Math.round(players[1].maxHp*2);
         players[1].atk=Math.round(players[1].atk*1.5);
         players[1].def=Math.round(players[1].def*1.5);
@@ -397,9 +403,10 @@ function checkVictory(){
             document.getElementById('victory-screen').classList.remove('hidden');
             document.getElementById('defeat-screen').classList.add('hidden');
             document.getElementById('winner').textContent=`${players[0].name} Wins!`;
-            coins+=20;
+            const reward=currentBattleIsBoss?20:10;
+            coins+=reward;
             cpuCoins+=10;
-            logMsg('You earned 20 coins!');
+            logMsg(`You earned ${reward} coins!`);
             tryLoot();
             addXP(50);
             document.getElementById('next-btn').classList.remove('hidden');
@@ -408,13 +415,14 @@ function checkVictory(){
             document.getElementById('victory-screen').classList.add('hidden');
             document.getElementById('defeat-screen').classList.remove('hidden');
             document.getElementById('loser').textContent=`Defeated by ${players[1].name}`;
-            coins+=10;
+            coins+=5;
             cpuCoins+=20;
-            logMsg('You earned 10 coins.');
+            logMsg('You earned 5 coins.');
             document.getElementById('next-btn').classList.add('hidden');
         }
         updateCoins();
         updateEquipInfo();
+        currentBattleIsBoss=false;
         return true;
     }
     return false;
@@ -438,6 +446,9 @@ function equipWeapon(){
     players[0].atk+=rarity==='epic'?4:rarity==='rare'?3:2;
     logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
+    updateEquipInfo();
+    updateLoadout();
+    updateUI();
 }
 function equipArmor(){
     if(players[0].equipment.armor.length>=players[0].slots.armor){
@@ -451,6 +462,9 @@ function equipArmor(){
     players[0].def+=rarity==='epic'?4:rarity==='rare'?3:2;
     logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
+    updateEquipInfo();
+    updateLoadout();
+    updateUI();
 }
 function equipArtifact(){
     if(players[0].equipment.artifact.length>=players[0].slots.artifact){
@@ -467,6 +481,9 @@ function equipArtifact(){
     players[0].energy=players[0].maxEnergy;
     logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
+    updateEquipInfo();
+    updateLoadout();
+    updateUI();
 }
 
 function randomRarity(){
@@ -637,7 +654,8 @@ function previewItem(type){
     const name=randomItemName(type,rarity);
     nextPurchase[type]={name,rarity};
     document.getElementById(`buy-${type}-btn`).title=name;
-    document.getElementById('preview').innerHTML=colorName(name,rarity);
+    const rarityLabel=rarity==='epic'?'Legendary':rarity.charAt(0).toUpperCase()+rarity.slice(1);
+    document.getElementById('preview').innerHTML=colorName(`${name} (${rarityLabel})`,rarity);
 }
 
 function clearPreview(e){
