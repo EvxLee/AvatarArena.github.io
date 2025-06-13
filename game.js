@@ -7,17 +7,20 @@ const itemNames={
     weapon:{
         common:['Rusty Sword','Wooden Club','Simple Dagger','Bronze Axe','Oak Spear'],
         rare:['Steel Blade','Enchanted Bow','Warhammer','Silver Rapier','Runic Spear'],
-        epic:['Dragon Slayer','Arcane Staff','Shadow Blade','Celestial Edge','Doom Hammer']
+        epic:['Dragon Slayer','Arcane Staff','Shadow Blade','Celestial Edge','Doom Hammer'],
+        legendary:['Excalibur','Divine Halberd','Demonbane','Storm Bringer','Celestial Katana']
     },
     armor:{
         common:['Leather Armor','Wooden Shield','Cloth Robe','Padded Vest','Hide Coat'],
         rare:['Chainmail','Iron Shield','Mage Cloak','Knight Plate','Scaled Mail'],
-        epic:['Dragon Scale','Blessed Aegis','Shadow Garb','Guardian Plate','Ethereal Shroud']
+        epic:['Dragon Scale','Blessed Aegis','Shadow Garb','Guardian Plate','Ethereal Shroud'],
+        legendary:['Aegis of Eternity','Mythic Plate','Dragonskin Mail','Archmage Robe','Shadow Emperor Armor']
     },
     artifact:{
         common:['Minor Talisman','Old Charm','Traveler\'s Stone','Lucky Coin','Tiny Totem'],
         rare:['Mystic Amulet','Guardian Rune','Sorcerer\'s Orb','Dragon Eye','Moon Pendant'],
-        epic:['Phoenix Heart','Ancient Relic','Time Shard','Star Fragment','Valkyrie Sigil']
+        epic:['Phoenix Heart','Ancient Relic','Time Shard','Star Fragment','Valkyrie Sigil'],
+        legendary:['Orb of Infinity','Eternal Crown','Dragon God\'s Eye','Celestial Phoenix Feather','Time Warp Relic']
     }
 };
 const backgrounds={
@@ -39,9 +42,9 @@ let cooldown=[0,0];
 let cooldownBase=[3,3];
 let coins=0;
 let inventory={
-    weapon:{common:[],rare:[],epic:[]},
-    armor:{common:[],rare:[],epic:[]},
-    artifact:{common:[],rare:[],epic:[]}
+    weapon:{common:[],rare:[],epic:[],legendary:[]},
+    armor:{common:[],rare:[],epic:[],legendary:[]},
+    artifact:{common:[],rare:[],epic:[],legendary:[]}
 };
 let xp=0;
 let level=1;
@@ -82,10 +85,14 @@ function loadProgress(){
             inventory=data;
         }else{
             inventory={
-                weapon:{common:Array(data.weapon).fill('Common Weapon'),rare:[],epic:[]},
-                armor:{common:Array(data.armor).fill('Common Armor'),rare:[],epic:[]},
-                artifact:{common:Array(data.artifact).fill('Common Artifact'),rare:[],epic:[]}
+                weapon:{common:Array(data.weapon).fill('Common Weapon'),rare:[],epic:[],legendary:[]},
+                armor:{common:Array(data.armor).fill('Common Armor'),rare:[],epic:[],legendary:[]},
+                artifact:{common:Array(data.artifact).fill('Common Artifact'),rare:[],epic:[],legendary:[]}
             };
+        }
+        // ensure new legendary arrays exist
+        for(const cat of ['weapon','armor','artifact']){
+            if(!inventory[cat].legendary) inventory[cat].legendary=[];
         }
     }
 }
@@ -109,13 +116,16 @@ function updateInventoryUI(){
     const t=document.getElementById('inv-artifact');
     if(w) w.textContent=`Common:${inventory.weapon.common.length} `+
         `Rare:${inventory.weapon.rare.length} `+
-        `Epic:${inventory.weapon.epic.length}`;
+        `Epic:${inventory.weapon.epic.length} `+
+        `Legendary:${inventory.weapon.legendary.length}`;
     if(a) a.textContent=`Common:${inventory.armor.common.length} `+
         `Rare:${inventory.armor.rare.length} `+
-        `Epic:${inventory.armor.epic.length}`;
+        `Epic:${inventory.armor.epic.length} `+
+        `Legendary:${inventory.armor.legendary.length}`;
     if(t) t.textContent=`Common:${inventory.artifact.common.length} `+
         `Rare:${inventory.artifact.rare.length} `+
-        `Epic:${inventory.artifact.epic.length}`;
+        `Epic:${inventory.artifact.epic.length} `+
+        `Legendary:${inventory.artifact.legendary.length}`;
 }
 
 function updateEquipInfo(){
@@ -443,7 +453,7 @@ function equipWeapon(){
     const name=randomItemName('weapon',rarity);
     players[0].equipment.weapon.push(name);
     inventory.weapon[rarity].push(name);
-    players[0].atk+=rarity==='epic'?4:rarity==='rare'?3:2;
+    players[0].atk+=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
     logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
     updateEquipInfo();
@@ -459,7 +469,7 @@ function equipArmor(){
     const name=randomItemName('armor',rarity);
     players[0].equipment.armor.push(name);
     inventory.armor[rarity].push(name);
-    players[0].def+=rarity==='epic'?4:rarity==='rare'?3:2;
+    players[0].def+=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
     logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
     updateEquipInfo();
@@ -475,7 +485,8 @@ function equipArtifact(){
     const name=randomItemName('artifact',rarity);
     players[0].equipment.artifact.push(name);
     inventory.artifact[rarity].push(name);
-    if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);players[0].maxHp+=30;players[0].maxEnergy+=15;}
+    if(rarity==='legendary'){cooldownBase[0]=Math.max(1,cooldownBase[0]-4);players[0].maxHp+=40;players[0].maxEnergy+=20;}
+    else if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);players[0].maxHp+=30;players[0].maxEnergy+=15;}
     else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);players[0].maxHp+=20;players[0].maxEnergy+=10;}
     else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);players[0].maxHp+=10;players[0].maxEnergy+=5;}
     players[0].energy=players[0].maxEnergy;
@@ -488,9 +499,10 @@ function equipArtifact(){
 
 function randomRarity(){
     const roll=Math.random();
-    if(roll<0.6) return 'common';
-    if(roll<0.9) return 'rare';
-    return 'epic';
+    if(roll<0.5) return 'common';
+    if(roll<0.8) return 'rare';
+    if(roll<0.95) return 'epic';
+    return 'legendary';
 }
 
 function randomItemName(type,rarity){
@@ -591,9 +603,9 @@ function populateCustom(){
     const aSel=document.getElementById('armor-select');
     const tSel=document.getElementById('artifact-select');
     const fill=(sel,arr)=>{ sel.innerHTML=''; arr.forEach(n=>{const o=document.createElement('option');o.textContent=n;sel.appendChild(o);}); };
-    fill(wSel,[...inventory.weapon.common,...inventory.weapon.rare,...inventory.weapon.epic]);
-    fill(aSel,[...inventory.armor.common,...inventory.armor.rare,...inventory.armor.epic]);
-    fill(tSel,[...inventory.artifact.common,...inventory.artifact.rare,...inventory.artifact.epic]);
+    fill(wSel,[...inventory.weapon.common,...inventory.weapon.rare,...inventory.weapon.epic,...inventory.weapon.legendary]);
+    fill(aSel,[...inventory.armor.common,...inventory.armor.rare,...inventory.armor.epic,...inventory.armor.legendary]);
+    fill(tSel,[...inventory.artifact.common,...inventory.artifact.rare,...inventory.artifact.epic,...inventory.artifact.legendary]);
 }
 
 function equipSelected(type){
@@ -602,7 +614,7 @@ function equipSelected(type){
     if(!name) return;
     const inv=inventory[type];
     let rarity='';
-    for(const r of ['epic','rare','common']){
+    for(const r of ['legendary','epic','rare','common']){
         const idx=inv[r].indexOf(name);
         if(idx>-1){inv[r].splice(idx,1);rarity=r;break;}
     }
@@ -610,10 +622,15 @@ function equipSelected(type){
     const p=players[0];
     if(p.equipment[type].length>=p.slots[type]){logMsg('No '+type+' slots left.'); return;}
     p.equipment[type].push(name);
-    if(type==='weapon') p.atk+=rarity==='epic'?4:rarity==='rare'?3:2;
-    if(type==='armor') p.def+=rarity==='epic'?4:rarity==='rare'?3:2;
+    if(type==='weapon'){
+        p.atk+=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
+    }
+    if(type==='armor'){
+        p.def+=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
+    }
     if(type==='artifact'){
-        if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);p.maxHp+=30;p.maxEnergy+=15;}
+        if(rarity==='legendary'){cooldownBase[0]=Math.max(1,cooldownBase[0]-4);p.maxHp+=40;p.maxEnergy+=20;}
+        else if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);p.maxHp+=30;p.maxEnergy+=15;}
         else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);p.maxHp+=20;p.maxEnergy+=10;}
         else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);p.maxHp+=10;p.maxEnergy+=5;}
         p.energy=p.maxEnergy;
@@ -654,7 +671,7 @@ function previewItem(type){
     const name=randomItemName(type,rarity);
     nextPurchase[type]={name,rarity};
     document.getElementById(`buy-${type}-btn`).title=name;
-    const rarityLabel=rarity==='epic'?'Legendary':rarity.charAt(0).toUpperCase()+rarity.slice(1);
+    const rarityLabel=rarity.charAt(0).toUpperCase()+rarity.slice(1);
     document.getElementById('preview').innerHTML=colorName(`${name} (${rarityLabel})`,rarity);
 }
 
