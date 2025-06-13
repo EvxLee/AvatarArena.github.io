@@ -170,8 +170,12 @@ button{
     font-style:italic;
 }
 .rarity-common{color:#666;}
-.rarity-rare{color:#2ecc71;}
-.rarity-epic{color:#f1c40f;}
+.rarity-rare{color:#3498db;}
+.rarity-epic{color:#9b59b6;}
+.rarity-legendary{color:#f1c40f;}
+
+#p1-name{color:#0a0;}
+#p2-name{color:#a00;}
 
 body.knight-bg{
     background:linear-gradient(#d4d4d4,#a0a0a0);
