@@ -113,21 +113,16 @@ function showBack(screen){
 function hideBack(){}
 
 function updateInventoryUI(){
+    const fmt=(inv)=>`Common:<span class="rarity-common">${inv.common.length}</span> `+
+        `Rare:<span class="rarity-rare">${inv.rare.length}</span> `+
+        `Epic:<span class="rarity-epic">${inv.epic.length}</span> `+
+        `Legendary:<span class="rarity-legendary">${inv.legendary.length}</span>`;
     const w=document.getElementById('inv-weapon');
     const a=document.getElementById('inv-armor');
     const t=document.getElementById('inv-artifact');
-    if(w) w.textContent=`Common:${inventory.weapon.common.length} `+
-        `Rare:${inventory.weapon.rare.length} `+
-        `Epic:${inventory.weapon.epic.length} `+
-        `Legendary:${inventory.weapon.legendary.length}`;
-    if(a) a.textContent=`Common:${inventory.armor.common.length} `+
-        `Rare:${inventory.armor.rare.length} `+
-        `Epic:${inventory.armor.epic.length} `+
-        `Legendary:${inventory.armor.legendary.length}`;
-    if(t) t.textContent=`Common:${inventory.artifact.common.length} `+
-        `Rare:${inventory.artifact.rare.length} `+
-        `Epic:${inventory.artifact.epic.length} `+
-        `Legendary:${inventory.artifact.legendary.length}`;
+    if(w) w.innerHTML=fmt(inventory.weapon);
+    if(a) a.innerHTML=fmt(inventory.armor);
+    if(t) t.innerHTML=fmt(inventory.artifact);
 }
 
 function updateEquipInfo(){
@@ -175,8 +170,8 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
             slots:data.slots
         };
         document.body.className=backgrounds[avatar]||'';
-        resetShop();
-        showLoadout();
+    resetShop();
+    showLoadout();
     });
 });
 
