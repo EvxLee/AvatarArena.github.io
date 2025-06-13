@@ -120,202 +120,126 @@ function loadProgress(){
                 artifact:{common:Array(data.artifact).fill('Common Artifact'),rare:[],epic:[],legendary:[]}
             };
         }
-        // ensure new legendary arrays exist
-        for(const cat of ['weapon','armor','artifact']){
-            if(!inventory[cat].legendary) inventory[cat].legendary=[];
-        }
     }
 }
 
-function updateCoins(){
-    const top=document.getElementById('coins-top');
-    if(top) top.textContent=coins;
-    const lvl=document.getElementById('level');
-    const xpEl=document.getElementById('xp');
-    if(lvl) lvl.textContent=level;
-    if(xpEl) xpEl.textContent=xp;
-    saveProgress();
-    updateInventoryUI();
-}
-
-function showBack(){
-    const btn=document.getElementById('menu-back');
-    if(btn) btn.classList.remove('hidden');
-}
-function hideBack(){
-    const btn=document.getElementById('menu-back');
-    if(btn) btn.classList.add('hidden');
-}
-
-function updateInventoryUI(){
-    const w=document.getElementById('inv-weapon');
-    const a=document.getElementById('inv-armor');
-    const t=document.getElementById('inv-artifact');
-    const fmtCounts=inv=>{
-        const cap=r=>r.charAt(0).toUpperCase()+r.slice(1);
-        return ['common','rare','epic','legendary']
-            .map(r=>`<span class="rarity-${r}">${cap(r)}:${inv[r].length}</span>`)
-            .join(' ');
-    };
-    if(w) w.innerHTML=fmtCounts(inventory.weapon);
-    if(a) a.innerHTML=fmtCounts(inventory.armor);
-    if(t) t.innerHTML=fmtCounts(inventory.artifact);
-}
+function showBack(){ document.getElementById('menu-back').classList.remove('hidden'); }
+function hideBack(){ document.getElementById('menu-back').classList.add('hidden'); }
 
 function updateEquipInfo(){
-    if(players.length){
-        const p=players[0];
-        const info=`Weapons: ${p.equipment.weapon.length}/${p.slots.weapon} `+
-        `Armor: ${p.equipment.armor.length}/${p.slots.armor} `+
-        `Artifacts: ${p.equipment.artifact.length}/${p.slots.artifact}`;
-        document.getElementById('equip-info').textContent=info;
-        const el=document.getElementById('equip-info-loadout');
-        if(el) el.textContent=info;
-    }
+    const p=players[0];
+    document.getElementById('equip-info-loadout').innerHTML=
+        `ATK: ${p.atk} / DEF: ${p.def}<br>`+
+        `Weapons: ${p.equipment.weapon.join(', ')||'None'}<br>`+
+        `Armor: ${p.equipment.armor.join(', ')||'None'}<br>`+
+        `Artifacts: ${p.equipment.artifact.join(', ')||'None'}`;
 }
 
 function updateLoadout(){
-    if(document.getElementById('loadout-stats')){
-        document.getElementById('loadout-stats').textContent=
-        `HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def} EN: ${players[0].energy}/${players[0].maxEnergy}`;
-    }
-}
-
-document.querySelectorAll('.avatar-grid button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-        if(!avatarsLoaded){
-            alert('Avatars are still loading. Please try again.');
-            return;
-        }
-        const avatar=btn.dataset.avatar;
-        const data=avatars[avatar];
-        if(!data) return;
-        currentAvatar=avatar;
-        const info=xpData[avatar]||{xp:0,level:0};
-        xp=info.xp;
-        level=info.level;
-        players[0]={
-            ...data,
-            name:`Player (${data.emoji} ${avatar})`,
-            maxHp:data.hp + level*5,
-            maxEnergy:data.energy,
-            energy:data.energy,
-            atk:data.atk + level,
-            def:data.def + level,
-            img:`assets/avatars/${avatar.toLowerCase()}.png`,
-            equipment:{weapon:[],armor:[],artifact:[]},
-            slots:data.slots
-        };
-        document.body.className=backgrounds[avatar]||'';
-    resetShop();
-    showLoadout();
-    });
-});
-
-function showLoadout(){
-    document.getElementById('selection-screen').classList.add('hidden');
-    document.getElementById('loadout-screen').classList.remove('hidden');
-    showBack();
     document.getElementById('loadout-name').textContent=players[0].name;
-    document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
-    document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
-    document.getElementById('lore').textContent=players[0].lore;
-    updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateInventoryUI();
-}
-
-function startBattle(){
-    document.getElementById('loadout-screen').classList.add('hidden');
-    document.getElementById('shop-screen').classList.add('hidden');
-    document.getElementById('victory-screen').classList.add('hidden');
-    document.getElementById('defeat-screen').classList.add('hidden');
-    document.getElementById('battle-screen').classList.remove('hidden');
-    showBack();
-    resetShop();
-    const keys=Object.keys(avatars);
-    const enemyKey=keys[Math.floor(Math.random()*keys.length)];
-    currentBattleIsBoss=isBoss;
-    const baseName=currentBattleIsBoss?(
-        enemyKey==='Rogue'? 'Renegade Rogue':
-        enemyKey==='Knight'? 'Mega Knight':'Master Mage'
-    ):`CPU (${avatars[enemyKey].emoji} ${enemyKey})`;
-    players[1]={
-        ...avatars[enemyKey],
-        name:baseName,
-        maxHp:avatars[enemyKey].hp,
-        maxEnergy:avatars[enemyKey].energy,
-        energy:avatars[enemyKey].energy,
-        img:`assets/avatars/${enemyKey.toLowerCase()}.png`,
-        equipment:{weapon:[],armor:[],artifact:[]},
-        slots:avatars[enemyKey].slots
-    };
-    if(currentBattleIsBoss){
-        players[1].maxHp=Math.round(players[1].maxHp*2);
-        players[1].atk=Math.round(players[1].atk*1.5);
-        players[1].def=Math.round(players[1].def*1.5);
-        players[1].maxEnergy+=20;
-        isBoss=false;
-    }
-    players[0].hp=players[0].maxHp;
-    players[1].hp=players[1].maxHp;
-    players[0].energy=players[0].maxEnergy;
-    players[1].energy=players[1].maxEnergy;
-    current=0;
-    defending=[false,false];
-    defendMult=[1,1];
-    stun=[0,0];
-    poison=[0,0];
-    cooldown=[0,0];
-    cooldownBase=[3,3];
-    log.innerHTML='';
-    updateUI();
-    updateCoins();
-    updateEquipInfo();
-    logMsg(`Battle ${battleNumber} Start!`);
-    updateTurn();
+    document.getElementById('loadout-model').textContent=players[0].img;
+    document.getElementById('loadout-stats').textContent=`HP ${players[0].hp}/${players[0].maxHp} | EN ${players[0].energy}/${players[0].maxEnergy}`;
+    document.getElementById('level').textContent=level;
+    document.getElementById('xp').textContent=xp;
 }
 
 function updateUI(){
-    for(let i=0;i<2;i++){
-        document.getElementById('p'+(i+1)+'-name').textContent=players[i].name;
-        document.getElementById('p'+(i+1)+'-model').innerHTML=`<img src="${players[i].img}" class="battle-img">`;
-        document.getElementById('p'+(i+1)+'-stats').textContent=`HP: ${Math.max(0,players[i].hp)}/${players[i].maxHp} ATK: ${players[i].atk} DEF: ${players[i].def} EN: ${players[i].energy}/${players[i].maxEnergy}`;
-        const p=players[i];
-        document.getElementById('p'+(i+1)+'-equip').textContent=
-            `Weapons: ${p.equipment.weapon.length}/${p.slots.weapon} `+
-            `Armor: ${p.equipment.armor.length}/${p.slots.armor} `+
-            `Artifacts: ${p.equipment.artifact.length}/${p.slots.artifact}`;
-        const ratio=Math.max(0,players[i].hp)/players[i].maxHp*100;
-        const bar=document.getElementById('p'+(i+1)+'-health');
-        bar.style.width=ratio+'%';
-        bar.style.background=ratio>50?'#4caf50':ratio>20?'#ffeb3b':'#f44336';
-        const eratio=Math.max(0,players[i].energy)/players[i].maxEnergy*100;
-        const ebar=document.getElementById('p'+(i+1)+'-energy');
-        if(ebar) ebar.style.width=eratio+'%';
-    }
+    document.body.className=backgrounds[currentAvatar]||'';
+    document.getElementById('p1-name').textContent=players[0].name;
+    document.getElementById('p1-model').textContent=players[0].img;
+    document.getElementById('p1-stats').textContent=`ATK ${players[0].atk} / DEF ${players[0].def}`;
+    document.getElementById('p1-equip').innerHTML=
+        `Weapons: ${players[0].equipment.weapon.join(', ')||'None'}<br>`+
+        `Armor: ${players[0].equipment.armor.join(', ')||'None'}<br>`+
+        `Artifacts: ${players[0].equipment.artifact.join(', ')||'None'}`;
+    document.getElementById('p2-name').textContent=players[1].name;
+    document.getElementById('p2-model').textContent=players[1].img;
+    document.getElementById('p2-stats').textContent=`ATK ${players[1].atk} / DEF ${players[1].def}`;
+    document.getElementById('p2-equip').innerHTML=
+        `Weapons: ${players[1].equipment.weapon.join(', ')||'None'}<br>`+
+        `Armor: ${players[1].equipment.armor.join(', ')||'None'}<br>`+
+        `Artifacts: ${players[1].equipment.artifact.join(', ')||'None'}`;
+}
+
+function updateCoins(){
+    document.getElementById('coins-top').textContent=coins;
+}
+
+function createPlayer(name,img){
+    return{
+        name,
+        img,
+        hp:100,
+        maxHp:100,
+        atk:20,
+        def:10,
+        energy:50,
+        maxEnergy:50,
+        equipment:{weapon:[],armor:[],artifact:[]},
+        slots:{weapon:2,armor:2,artifact:1}
+    };
+}
+
+function selectAvatar(name){
+    if(!avatarsLoaded) return;
+    currentAvatar=name;
+    const data=avatars[name];
+    players[0]=createPlayer(data.name,data.img);
+    ({xp,level}=xpData[name]);
+    updateLoadout();
     updateEquipInfo();
+    updateCoins();
+    document.getElementById('selection-screen').classList.add('hidden');
+    document.getElementById('loadout-screen').classList.remove('hidden');
+    showBack();
+}
+
+document.querySelectorAll('.avatar-option button').forEach(btn=>{
+    btn.addEventListener('click',()=>selectAvatar(btn.dataset.avatar));
+});
+
+function startBattle(){
+    if(!avatarsLoaded||!itemsLoaded) return;
+    players[1]=createPlayer('CPU',avatars.Knight.img);
+    players[1].atk=15+Math.floor(battleNumber*2);
+    players[1].def=10+Math.floor(battleNumber*1.5);
+    players[1].hp=100+battleNumber*10;
+    players[1].maxHp=players[1].hp;
+    players[1].energy=50;
+    players[1].maxEnergy=50;
+    players[1].img=avatars[battleNumber%3===0?'Rogue':battleNumber%2===0?'Mage':'Knight'].img;
+    players[1].equipment={weapon:['Basic Sword'],armor:['Cloth'],artifact:[]};
+    players[0].hp=players[0].maxHp;
+    players[0].energy=players[0].maxEnergy;
+    cooldown=[0,0];
+    stun=[0,0];
+    poison=[0,0];
+    defending=[false,false];
+    battleNumber++;
+    current=0;
+    currentBattleIsBoss=isBoss;
+    document.getElementById('battle-screen').classList.remove('hidden');
+    document.getElementById('loadout-screen').classList.add('hidden');
+    document.getElementById('victory-screen').classList.add('hidden');
+    document.getElementById('defeat-screen').classList.add('hidden');
+    showBack();
+    updateUI();
+    updateHealthBars();
+    log.innerHTML='';
+    updateTurn();
+}
+
+function updateHealthBars(){
+    document.getElementById('p1-health').style.width=Math.max(0,players[0].hp/players[0].maxHp*100)+'%';
+    document.getElementById('p1-energy').style.width=Math.max(0,players[0].energy/players[0].maxEnergy*100)+'%';
+    document.getElementById('p2-health').style.width=Math.max(0,players[1].hp/players[1].maxHp*100)+'%';
+    document.getElementById('p2-energy').style.width=Math.max(0,players[1].energy/players[1].maxEnergy*100)+'%';
 }
 
 function endTurn(){
-    for(let i=0;i<2;i++){
-        if(poison[i]>0){
-            players[i].hp-=5;
-            poison[i]--;
-            logMsg(`${players[i].name} takes 5 poison damage.`);
-        }
-    }
-    if(checkVictory()) { updateUI(); return; }
     current=1-current;
-    defending[current]=false;
-    defendMult[current]=1;
-    if(cooldown[current]>0)cooldown[current]--;
-    updateUI();
-    const over=checkVictory();
-    if(!over){
-        updateTurn();
-    }
+    updateHealthBars();
+    updateTurn();
 }
 
 function cpuAction(){
@@ -393,40 +317,28 @@ function defend(){
 }
 
 function special(){
-    if(cooldown[current]>0){
-        logMsg(`Special on cooldown: ${cooldown[current]} turn(s) left.`);
-        return;
-    }
     const attacker=players[current];
-    if(attacker.energy<attacker.maxEnergy*0.5){
-        logMsg('Not enough energy.');
-        return;
-    }
-    attacker.energy=Math.max(0,attacker.energy - Math.floor(attacker.maxEnergy*0.5));
     const defender=players[1-current];
-    if(Math.random()<0.05){
-        logMsg(`${defender.name} dodged the special attack!`);
-        cooldown[current]=cooldownBase[current];
-        defending[current]=false;
+    if(cooldown[current]>0 || attacker.energy<attacker.maxEnergy*0.5){
+        logMsg(`${attacker.name} tried to use a special move but failed.`);
         endTurn();
         return;
     }
     const name=attacker.name;
     if(name.includes('Knight')){
         let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        let dmg=Math.max(15,Math.round(attacker.atk*1.5 - defense/2));
         if(defending[1-current]){
             dmg=Math.round(dmg*defendMult[1-current]);
         }
-        if(Math.random()<0.15){dmg*=2;logMsg('Critical hit!');}
+        if(Math.random()<0.2){dmg*=2;logMsg('Critical hit!');}
         defender.hp-=dmg;
-        stun[1-current]=1;
-        logMsg(`${attacker.name} uses Shield Bash for ${dmg} damage! Enemy stunned.`);
+        logMsg(`${attacker.name} unleashes Power Strike for ${dmg} damage.`);
         if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }else if(name.includes('Mage')){
-        if(Math.random()<0.7){
+        if(Math.random()<0.8){
             let defense=defender.def;
-            let dmg=Math.max(10,Math.round(attacker.atk*2 - defense/2));
+            let dmg=Math.max(20,Math.round(attacker.atk*1.8 - defense/2));
             if(defending[1-current]){
                 dmg=Math.round(dmg*defendMult[1-current]);
             }
@@ -457,7 +369,7 @@ function special(){
 function checkVictory(){
     if(players[0].hp<=0 || players[1].hp<=0){
         document.getElementById('battle-screen').classList.add('hidden');
-        hideBack();  // newly added
+        hideBack();
         const playerWon = players[1].hp<=0;
         if(playerWon){
             document.getElementById('victory-screen').classList.remove('hidden');
@@ -776,21 +688,21 @@ function playerSpecial(){
     special();
 }
 
-document.getElementById('attack-btn').onclick=playerAttack;
-document.getElementById('defend-btn').onclick=playerDefend;
-document.getElementById('special-btn').onclick=playerSpecial;
-document.getElementById('start-btn').onclick=startBattle;
-document.getElementById('next-btn').onclick=nextBattle;
-document.getElementById('shop-btn').onclick=()=>{
+document.getElementById('attack-btn').addEventListener('click',playerAttack);
+document.getElementById('defend-btn').addEventListener('click',playerDefend);
+document.getElementById('special-btn').addEventListener('click',playerSpecial);
+document.getElementById('start-btn').addEventListener('click',startBattle);
+document.getElementById('next-btn').addEventListener('click',nextBattle);
+document.getElementById('shop-btn').addEventListener('click',()=>{
     document.getElementById('shop-screen').classList.toggle('hidden');
-};
-document.getElementById('menu-back').onclick=goBack;
-document.getElementById('boss-btn').onclick=startBossBattle;
-document.getElementById('custom-btn').onclick=showCustom;
-document.getElementById('custom-back').onclick=hideCustom;
-document.getElementById('equip-sel-weapon').onclick=()=>equipSelected('weapon');
-document.getElementById('equip-sel-armor').onclick=()=>equipSelected('armor');
-document.getElementById('equip-sel-artifact').onclick=()=>equipSelected('artifact');
+});
+document.getElementById('menu-back').addEventListener('click',goBack);
+document.getElementById('boss-btn').addEventListener('click',startBossBattle);
+document.getElementById('custom-btn').addEventListener('click',showCustom);
+document.getElementById('custom-back').addEventListener('click',hideCustom);
+document.getElementById('equip-sel-weapon').addEventListener('click',()=>equipSelected('weapon'));
+document.getElementById('equip-sel-armor').addEventListener('click',()=>equipSelected('armor'));
+document.getElementById('equip-sel-artifact').addEventListener('click',()=>equipSelected('artifact'));
 document.getElementById('buy-weapon-btn').addEventListener('mouseenter',()=>previewItem('weapon'));
 document.getElementById('buy-weapon-btn').addEventListener('mouseleave',clearPreview);
 document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previewItem('armor'));
