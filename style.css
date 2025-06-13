@@ -40,18 +40,18 @@ button{
     flex-direction:column;
     align-items:center;
     justify-content:center;
-    width:30%;
+    width:33%;
     min-width:150px;
 }
 .avatar-img{
-    width:150px;
-    height:150px;
+    width:100%;
+    height:220px;
     margin-bottom:10px;
     background:#ccc;
+    object-fit:contain;
 }
 .avatar-grid button{
-    width:85%;
-    max-width:320px;
+    width:100%;
     font-size:24px;
 }
 .avatar-grid button:hover{background:#eee;}
@@ -71,6 +71,12 @@ button{
     border-radius:8px;
     padding:10px;
     background:linear-gradient(#fff,#e0e0e0);
+}
+.battle-img{
+    width:100%;
+    height:220px;
+    object-fit:contain;
+    margin-bottom:5px;
 }
 .health-bar{
     height:20px;
@@ -163,6 +169,9 @@ button{
     margin-top:5px;
     font-style:italic;
 }
+.rarity-common{color:#666;}
+.rarity-rare{color:#2ecc71;}
+.rarity-epic{color:#f1c40f;}
 
 body.knight-bg{
     background:linear-gradient(#d4d4d4,#a0a0a0);
@@ -193,8 +202,9 @@ body.rogue-bg{
         padding:12px 20px;
     }
     .avatar-img{
-        width:120px;
-        height:120px;
+        width:100%;
+        height:180px;
+        object-fit:contain;
     }
     .avatar-list button{
         font-size:20px;
@@ -205,5 +215,8 @@ body.rogue-bg{
     .player{
         width:70%;
         margin-bottom:20px;
+    }
+    .battle-img{
+        height:180px;
     }
 }
