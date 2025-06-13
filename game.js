@@ -120,18 +120,15 @@ function updateInventoryUI(){
     const w=document.getElementById('inv-weapon');
     const a=document.getElementById('inv-armor');
     const t=document.getElementById('inv-artifact');
-    if(w) w.textContent=`Common:${inventory.weapon.common.length} `+
-        `Rare:${inventory.weapon.rare.length} `+
-        `Epic:${inventory.weapon.epic.length} `+
-        `Legendary:${inventory.weapon.legendary.length}`;
-    if(a) a.textContent=`Common:${inventory.armor.common.length} `+
-        `Rare:${inventory.armor.rare.length} `+
-        `Epic:${inventory.armor.epic.length} `+
-        `Legendary:${inventory.armor.legendary.length}`;
-    if(t) t.textContent=`Common:${inventory.artifact.common.length} `+
-        `Rare:${inventory.artifact.rare.length} `+
-        `Epic:${inventory.artifact.epic.length} `+
-        `Legendary:${inventory.artifact.legendary.length}`;
+    const fmtCounts=inv=>{
+        const cap=r=>r.charAt(0).toUpperCase()+r.slice(1);
+        return ['common','rare','epic','legendary']
+            .map(r=>`<span class="rarity-${r}">${cap(r)}:${inv[r].length}</span>`)
+            .join(' ');
+    };
+    if(w) w.innerHTML=fmtCounts(inventory.weapon);
+    if(a) a.innerHTML=fmtCounts(inventory.armor);
+    if(t) t.innerHTML=fmtCounts(inventory.artifact);
 }
 
 function updateEquipInfo(){
