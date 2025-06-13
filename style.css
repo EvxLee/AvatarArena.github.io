@@ -33,6 +33,12 @@ button{
     right:10px;
     z-index:10;
 }
+.top-left{
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:10;
+}
 .hidden{display:none!important;}
 .avatar-grid{
     display:flex;
@@ -161,6 +167,16 @@ button{
     top:55px;
     right:10px;
     color:#d4af37;
+    font-weight:bold;
+}
+#version-display{
+    position:absolute;
+    top:10px;
+    left:10px;
+    border:2px solid #333;
+    background:#fff;
+    padding:4px 8px;
+    border-radius:8px;
     font-weight:bold;
 }
 #inventory-info{
