@@ -3,26 +3,11 @@ let avatarsLoaded = false;
 fetch("data/avatars.json")
   .then(r => r.json())
   .then(data => { avatars = data; avatarsLoaded = true; });
-const itemNames={
-    weapon:{
-        common:['Rusty Sword','Wooden Club','Simple Dagger','Bronze Axe','Oak Spear'],
-        rare:['Steel Blade','Enchanted Bow','Warhammer','Silver Rapier','Runic Spear'],
-        epic:['Dragon Slayer','Arcane Staff','Shadow Blade','Celestial Edge','Doom Hammer'],
-        legendary:['Excalibur','Divine Halberd','Demonbane','Storm Bringer','Celestial Katana']
-    },
-    armor:{
-        common:['Leather Armor','Wooden Shield','Cloth Robe','Padded Vest','Hide Coat'],
-        rare:['Chainmail','Iron Shield','Mage Cloak','Knight Plate','Scaled Mail'],
-        epic:['Dragon Scale','Blessed Aegis','Shadow Garb','Guardian Plate','Ethereal Shroud'],
-        legendary:['Aegis of Eternity','Mythic Plate','Dragonskin Mail','Archmage Robe','Shadow Emperor Armor']
-    },
-    artifact:{
-        common:['Minor Talisman','Old Charm','Traveler\'s Stone','Lucky Coin','Tiny Totem'],
-        rare:['Mystic Amulet','Guardian Rune','Sorcerer\'s Orb','Dragon Eye','Moon Pendant'],
-        epic:['Phoenix Heart','Ancient Relic','Time Shard','Star Fragment','Valkyrie Sigil'],
-        legendary:['Orb of Infinity','Eternal Crown','Dragon God\'s Eye','Celestial Phoenix Feather','Time Warp Relic']
-    }
-};
+let itemNames = {};
+let itemsLoaded = false;
+fetch("data/items.json")
+  .then(r => r.json())
+  .then(data => { itemNames = data; itemsLoaded = true; });
 const backgrounds={
     Knight:'knight-bg',
     Mage:'mage-bg',
@@ -47,7 +32,9 @@ let inventory={
     artifact:{common:[],rare:[],epic:[],legendary:[]}
 };
 let xp=0;
-let level=1;
+let level=0;
+let xpData={Knight:{xp:0,level:0},Mage:{xp:0,level:0},Rogue:{xp:0,level:0}};
+let currentAvatar=null;
 let cpuCoins=0;
 let battleNumber=1;
 let isBoss=false;
@@ -69,17 +56,19 @@ function setButtons(enabled){
 function saveProgress(){
     localStorage.setItem('aaCoins', coins);
     localStorage.setItem('aaInv', JSON.stringify(inventory));
-    localStorage.setItem('aaXP', xp);
-    localStorage.setItem('aaLevel', level);
+    localStorage.setItem('aaXPData', JSON.stringify(xpData));
 }
 
 function loadProgress(){
     const saved=localStorage.getItem('aaCoins');
     if(saved) coins=parseInt(saved);
-    const savedXP=localStorage.getItem('aaXP');
-    if(savedXP) xp=parseInt(savedXP);
-    const savedLvl=localStorage.getItem('aaLevel');
-    if(savedLvl) level=parseInt(savedLvl);
+    const xpStr=localStorage.getItem('aaXPData');
+    if(xpStr){
+        try{ xpData=JSON.parse(xpStr); }catch(e){}
+    }
+    for(const av of ['Knight','Mage','Rogue']){
+        if(!xpData[av]) xpData[av]={xp:0,level:0};
+    }
     const inv=localStorage.getItem('aaInv');
     if(inv){
         const data=JSON.parse(inv);
@@ -104,6 +93,8 @@ function updateCoins(){
     if(coinEl) coinEl.textContent=coins;
     const el=document.getElementById('coins-loadout');
     if(el) el.textContent=coins;
+    const top=document.getElementById('coins-top');
+    if(top) top.textContent=coins;
     const lvl=document.getElementById('level');
     const xpEl=document.getElementById('xp');
     if(lvl) lvl.textContent=level;
@@ -167,12 +158,18 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
         const avatar=btn.dataset.avatar;
         const data=avatars[avatar];
         if(!data) return;
+        currentAvatar=avatar;
+        const info=xpData[avatar]||{xp:0,level:0};
+        xp=info.xp;
+        level=info.level;
         players[0]={
             ...data,
             name:`Player (${data.emoji} ${avatar})`,
-            maxHp:data.hp,
+            maxHp:data.hp + level*5,
             maxEnergy:data.energy,
             energy:data.energy,
+            atk:data.atk + level,
+            def:data.def + level,
             img:`assets/avatars/${avatar.toLowerCase()}.png`,
             equipment:{weapon:[],armor:[],artifact:[]},
             slots:data.slots
@@ -357,14 +354,15 @@ function defend(){
 }
 
 function special(){
-    if(players[current].energy<players[current].cost || cooldown[current]>0){
-        logMsg('Special unavailable.');
-        endTurn();
+    if(cooldown[current]>0){
+        logMsg(`Special on cooldown: ${cooldown[current]} turn(s) left.`);
         return;
     }
-    players[current].energy-=players[current].cost;
-    players[current].energy=Math.max(0,players[current].energy);
     const attacker=players[current];
+    if(attacker.energy<attacker.maxEnergy*0.5){
+        logMsg('Not enough energy.');
+        return;
+    }
     attacker.energy=Math.max(0,attacker.energy - Math.floor(attacker.maxEnergy*0.5));
     const defender=players[1-current];
     if(Math.random()<0.05){
@@ -525,7 +523,8 @@ function randomRarity(){
 }
 
 function randomItemName(type,rarity){
-    const list=itemNames[type][rarity];
+    const list=itemNames[type]?.[rarity]||[];
+    if(!list.length) return 'Unknown';
     return list[Math.floor(Math.random()*list.length)];
 }
 
@@ -584,22 +583,32 @@ function tryLoot(){
 
 function addXP(amount){
     xp+=amount;
-    const needed=level*100;
-    if(xp>=needed){
-        xp-=needed;
+    while(xp>=100){
+        xp-=100;
         level++;
-        players[0].maxHp+=10;
-        players[0].maxEnergy+=5;
+        players[0].atk+=1;
+        players[0].def+=1;
+        players[0].maxHp+=5;
+        players[0].hp+=5;
         logMsg(`Level up! Now level ${level}.`);
     }
+    xpData[currentAvatar]={xp,level};
     updateCoins();
+    updateLoadout();
+    updateUI();
+}
+
+function closeShop(){
+    document.getElementById('shop-screen').classList.add('hidden');
 }
 
 function showCustom(){
-    populateCustom();
     document.getElementById('loadout-screen').classList.add('hidden');
     document.getElementById('custom-screen').classList.remove('hidden');
+    showBack();
+    populateCustom();
 }
+
 function hideCustom(){
     document.getElementById('custom-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
@@ -691,6 +700,7 @@ function showConfetti(){
 }
 
 function previewItem(type){
+    if(!itemsLoaded) return;
     const rarity=randomRarity();
     const name=randomItemName(type,rarity);
     nextPurchase[type]={name,rarity};
