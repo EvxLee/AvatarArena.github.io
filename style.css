@@ -69,7 +69,7 @@ button{
     align-items:flex-start;
     margin-top:20px;
     flex:1 1 auto;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
 }
 .player{
     width:45%;
