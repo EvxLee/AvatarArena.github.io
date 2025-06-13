@@ -71,7 +71,7 @@ function chooseCpuAction(){
     const idx=1;
     defending[idx]=false;
     defendMult[idx]=1;
-   const canSpecial = cooldown[idx]===0 && players[idx].energy>=players[idx].maxEnergy*0.5;
+    const canSpecial = cooldown[idx]===0 && players[idx].energy>=players[idx].maxEnergy*0.5;
     const roll=Math.random();
     if(canSpecial){
         if(roll<0.4) cpuPlannedAction='attack';
@@ -700,11 +700,11 @@ function equipSelected(type){
         p.def+=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
     }
     if(type==='artifact'){
-        if(rarity==='legendary'){cooldownBase[0]=Math.max(1,cooldownBase[0]-4);p.maxHp+=40;p.maxEnergy+=20;}
-        else if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);p.maxHp+=30;p.maxEnergy+=15;}
-        else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);p.maxHp+=20;p.maxEnergy+=10;}
-        else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);p.maxHp+=10;p.maxEnergy+=5;}
-        p.energy=p.maxEnergy;
+        if(rarity==='legendary'){cooldownBase[0]=Math.max(1,cooldownBase[0]-4);players[0].maxHp+=40;players[0].maxEnergy+=20;}
+        else if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);players[0].maxHp+=30;players[0].maxEnergy+=15;}
+        else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);players[0].maxHp+=20;players[0].maxEnergy+=10;}
+        else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);players[0].maxHp+=10;players[0].maxEnergy+=5;}
+        players[0].energy=players[0].maxEnergy;
     }
     populateCustom();
     updateCoins();
