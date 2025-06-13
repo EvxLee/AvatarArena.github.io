@@ -14,6 +14,7 @@ const backgrounds={
     Rogue:'rogue-bg'
 };
 const nextPurchase={weapon:null,armor:null,artifact:null};
+let shopStock={weapon:null,armor:null,artifact:null};
 function colorName(name,rarity){
     return `<span class="rarity-${rarity}">${name}</span>`;
 }
@@ -46,6 +47,13 @@ function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
 
 loadProgress();
 updateCoins();
+
+function resetShop(){
+    for(const type of ['weapon','armor','artifact']){
+        const r=randomRarity();
+        shopStock[type]={name:randomItemName(type,r),rarity:r};
+    }
+}
 
 function setButtons(enabled){
     document.getElementById('attack-btn').disabled=!enabled;
@@ -89,10 +97,6 @@ function loadProgress(){
 }
 
 function updateCoins(){
-    const coinEl=document.getElementById('coins');
-    if(coinEl) coinEl.textContent=coins;
-    const el=document.getElementById('coins-loadout');
-    if(el) el.textContent=coins;
     const top=document.getElementById('coins-top');
     if(top) top.textContent=coins;
     const lvl=document.getElementById('level');
@@ -183,6 +187,7 @@ function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
     showBack();
+    resetShop();
     document.getElementById('loadout-name').textContent=players[0].name;
     document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
     document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
@@ -531,9 +536,11 @@ function randomItemName(type,rarity){
 function purchase(type,cost){
     if(coins>=cost){
         coins-=cost;
-        const {name,rarity}=nextPurchase[type]||{name:randomItemName(type,'common'),rarity:'common'};
+        const {name,rarity}=shopStock[type];
         inventory[type][rarity].push(name);
         logMsg(`Purchased ${colorName(name,rarity)}.`);
+        const r=randomRarity();
+        shopStock[type]={name:randomItemName(type,r),rarity:r};
         nextPurchase[type]=null;
         document.getElementById(`buy-${type}-btn`).removeAttribute('title');
         document.getElementById('preview').textContent='';
@@ -701,8 +708,7 @@ function showConfetti(){
 
 function previewItem(type){
     if(!itemsLoaded) return;
-    const rarity=randomRarity();
-    const name=randomItemName(type,rarity);
+    const {name,rarity}=shopStock[type];
     nextPurchase[type]={name,rarity};
     document.getElementById(`buy-${type}-btn`).title=name;
     const rarityLabel=rarity.charAt(0).toUpperCase()+rarity.slice(1);
