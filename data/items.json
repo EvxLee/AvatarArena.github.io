@@ -1,0 +1,20 @@
+{
+  "weapon": {
+    "common": ["Rusty Sword", "Wooden Club", "Simple Dagger", "Bronze Axe", "Oak Spear"],
+    "rare": ["Steel Blade", "Enchanted Bow", "Warhammer", "Silver Rapier", "Runic Spear"],
+    "epic": ["Dragon Slayer", "Arcane Staff", "Shadow Blade", "Celestial Edge", "Doom Hammer"],
+    "legendary": ["Excalibur", "Divine Halberd", "Demonbane", "Storm Bringer", "Celestial Katana"]
+  },
+  "armor": {
+    "common": ["Leather Armor", "Wooden Shield", "Cloth Robe", "Padded Vest", "Hide Coat"],
+    "rare": ["Chainmail", "Iron Shield", "Mage Cloak", "Knight Plate", "Scaled Mail"],
+    "epic": ["Dragon Scale", "Blessed Aegis", "Shadow Garb", "Guardian Plate", "Ethereal Shroud"],
+    "legendary": ["Aegis of Eternity", "Mythic Plate", "Dragonskin Mail", "Archmage Robe", "Shadow Emperor Armor"]
+  },
+  "artifact": {
+    "common": ["Minor Talisman", "Old Charm", "Traveler's Stone", "Lucky Coin", "Tiny Totem"],
+    "rare": ["Mystic Amulet", "Guardian Rune", "Sorcerer's Orb", "Dragon Eye", "Moon Pendant"],
+    "epic": ["Phoenix Heart", "Ancient Relic", "Time Shard", "Star Fragment", "Valkyrie Sigil"],
+    "legendary": ["Orb of Infinity", "Eternal Crown", "Dragon God's Eye", "Celestial Phoenix Feather", "Time Warp Relic"]
+  }
+}

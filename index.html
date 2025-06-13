@@ -8,6 +8,8 @@
 </head>
 <body>
 <div class="container">
+    <div id="coin-display">🪙 <span id="coins-top">0</span></div>
+    <button id="menu-back" class="top-right hidden">🔙 Back</button>
     <div id="selection-screen">
         <h1>Choose Your Avatar</h1>
         <div class="avatar-grid">
@@ -41,11 +43,7 @@
                 Artifacts: <span id="inv-artifact">0</span>
             </div>
             <div id="equip-info-loadout"></div>
-            <button onclick="equipWeapon()">Equip Weapon</button>
-            <button onclick="equipArmor()">Equip Armor</button>
-            <button onclick="equipArtifact()">Equip Artifact</button>
             <button id="shop-btn">🛒 Shop</button>
-            <button id="back-btn">🔙 Back</button>
         </div>
         <div id="shop-screen" class="hidden">
             <h3>Shop</h3>
@@ -86,14 +84,6 @@
     <div id="battle-screen" class="hidden">
         <h2 id="turn-indicator"></h2>
         <div class="battle-area">
-            <div class="player" id="player2">
-                <h3 id="p2-name"></h3>
-                <div class="model" id="p2-model"></div>
-                <div class="health-bar"><div class="health-inner" id="p2-health"></div></div>
-                <div class="energy-bar"><div class="energy-inner" id="p2-energy"></div></div>
-                <p id="p2-stats"></p>
-                <p id="p2-equip"></p>
-            </div>
             <div class="player" id="player1">
                 <h3 id="p1-name"></h3>
                 <div class="model" id="p1-model"></div>
@@ -101,6 +91,14 @@
                 <div class="energy-bar"><div class="energy-inner" id="p1-energy"></div></div>
                 <p id="p1-stats"></p>
                 <p id="p1-equip"></p>
+            </div>
+            <div class="player" id="player2">
+                <h3 id="p2-name"></h3>
+                <div class="model" id="p2-model"></div>
+                <div class="health-bar"><div class="health-inner" id="p2-health"></div></div>
+                <div class="energy-bar"><div class="energy-inner" id="p2-energy"></div></div>
+                <p id="p2-stats"></p>
+                <p id="p2-equip"></p>
             </div>
         </div>
         <div class="actions">
@@ -112,11 +110,15 @@
         </div>
     <div id="victory-screen" class="hidden end-screen">
         <h1 id="winner"></h1>
+        <img id="victory-img" class="result-img" src="" alt="winner">
+        <p id="victory-reward"></p>
         <button id="next-btn" class="hidden">▶️ Next Battle</button>
         <button onclick="location.reload()">🔄 Restart</button>
     </div>
     <div id="defeat-screen" class="hidden end-screen">
         <h1 id="loser"></h1>
+        <img id="defeat-img" class="result-img" src="" alt="loser">
+        <p id="defeat-reward"></p>
         <button onclick="location.reload()">🔄 Restart</button>
     </div>
 </div>
