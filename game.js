@@ -71,16 +71,20 @@ function chooseCpuAction(){
     const idx=1;
     defending[idx]=false;
     defendMult[idx]=1;
-    let choices=['attack','defend'];
-    if(cooldown[idx]===0 && players[idx].energy>=players[idx].maxEnergy*0.5){
-        choices.push('special');
+   const canSpecial = cooldown[idx]===0 && players[idx].energy>=players[idx].maxEnergy*0.5;
+    const roll=Math.random();
+    if(canSpecial){
+        if(roll<0.4) cpuPlannedAction='attack';
+        else if(roll<0.8) cpuPlannedAction='defend';
+        else cpuPlannedAction='special';
+    }else{
+        cpuPlannedAction = roll<0.6 ? 'attack' : 'defend';
     }
-    cpuPlannedAction=choices[Math.floor(Math.random()*choices.length)];
     if(cpuPlannedAction==='defend'){
-        const roll=Math.random();
-        if(roll<0.02){cpuDefendMsg=`${players[idx].name} prepares a perfect block!`;defendMult[idx]=0;}
-        else if(roll<0.10){cpuDefendMsg=`${players[idx].name} braces to block 75% damage.`;defendMult[idx]=0.25;}
-        else if(roll<0.35){cpuDefendMsg=`${players[idx].name} braces to block 50% damage.`;defendMult[idx]=0.5;}
+        const r=Math.random();
+        if(r<0.02){cpuDefendMsg=`${players[idx].name} prepares a perfect block!`;defendMult[idx]=0;}
+        else if(r<0.10){cpuDefendMsg=`${players[idx].name} braces to block 75% damage.`;defendMult[idx]=0.25;}
+        else if(r<0.35){cpuDefendMsg=`${players[idx].name} braces to block 50% damage.`;defendMult[idx]=0.5;}
         else{cpuDefendMsg=`${players[idx].name} braces to block 25% damage.`;defendMult[idx]=0.75;}
         defending[idx]=true;
     }else{
@@ -338,7 +342,8 @@ function updateTurn(){
         return;
     }
     if(current===1){
-        setTimeout(cpuAction,500);
+        chooseCpuAction();
+        cpuAction();
     }
 }
 
@@ -753,15 +758,12 @@ function clearPreview(e){
 }
 
 function playerAttack(){
-    chooseCpuAction();
     attack();
 }
 function playerDefend(){
-    chooseCpuAction();
     defend();
 }
 function playerSpecial(){
-    chooseCpuAction();
     special();
 }
 
