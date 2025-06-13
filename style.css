@@ -158,8 +158,8 @@ button{
 }
 #coin-display{
     position:absolute;  
-    top:30px;
-    right:150px;
+    top:50px;
+    right:170px;
     color:#d4af37;
     font-weight:bold;
 }
