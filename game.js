@@ -48,10 +48,14 @@ function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
 loadProgress();
 updateCoins();
 
+function refreshShopItem(type){
+    const r=randomRarity();
+    shopStock[type]={name:randomItemName(type,r),rarity:r};
+}
+
 function resetShop(){
     for(const type of ['weapon','armor','artifact']){
-        const r=randomRarity();
-        shopStock[type]={name:randomItemName(type,r),rarity:r};
+        refreshShopItem(type);
     }
 }
 
