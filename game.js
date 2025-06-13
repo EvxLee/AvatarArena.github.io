@@ -179,7 +179,8 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
             slots:data.slots
         };
         document.body.className=backgrounds[avatar]||'';
-        showLoadout();
+    resetShop();
+    showLoadout();
     });
 });
 
@@ -187,7 +188,6 @@ function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
     showBack();
-    resetShop();
     document.getElementById('loadout-name').textContent=players[0].name;
     document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
     document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
@@ -205,6 +205,7 @@ function startBattle(){
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('battle-screen').classList.remove('hidden');
     showBack();
+    resetShop();
     const keys=Object.keys(avatars);
     const enemyKey=keys[Math.floor(Math.random()*keys.length)];
     currentBattleIsBoss=isBoss;
@@ -539,8 +540,6 @@ function purchase(type,cost){
         const {name,rarity}=shopStock[type];
         inventory[type][rarity].push(name);
         logMsg(`Purchased ${colorName(name,rarity)}.`);
-        const r=randomRarity();
-        shopStock[type]={name:randomItemName(type,r),rarity:r};
         nextPurchase[type]=null;
         document.getElementById(`buy-${type}-btn`).removeAttribute('title');
         document.getElementById('preview').textContent='';
