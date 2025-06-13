@@ -52,6 +52,8 @@ let cpuCoins=0;
 let battleNumber=1;
 let isBoss=false;
 let currentBattleIsBoss=false;
+let lastRewardCoins=0;
+let lastLootMsg='';
 const log=document.getElementById('log');
 function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
 
@@ -108,6 +110,15 @@ function updateCoins(){
     if(xpEl) xpEl.textContent=xp;
     saveProgress();
     updateInventoryUI();
+}
+
+function showBack(){
+    const btn=document.getElementById('menu-back');
+    if(btn) btn.classList.remove('hidden');
+}
+function hideBack(){
+    const btn=document.getElementById('menu-back');
+    if(btn) btn.classList.add('hidden');
 }
 
 function updateInventoryUI(){
@@ -174,6 +185,7 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
 function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
+    showBack();
     document.getElementById('loadout-name').textContent=players[0].name;
     document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
     document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
@@ -190,6 +202,7 @@ function startBattle(){
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('battle-screen').classList.remove('hidden');
+    showBack();
     const keys=Object.keys(avatars);
     const enemyKey=keys[Math.floor(Math.random()*keys.length)];
     currentBattleIsBoss=isBoss;
@@ -344,15 +357,14 @@ function defend(){
 }
 
 function special(){
-    if(cooldown[current]>0){
-        logMsg(`Special on cooldown: ${cooldown[current]} turn(s) left.`);
+    if(players[current].energy<players[current].cost || cooldown[current]>0){
+        logMsg('Special unavailable.');
+        endTurn();
         return;
     }
+    players[current].energy-=players[current].cost;
+    players[current].energy=Math.max(0,players[current].energy);
     const attacker=players[current];
-    if(attacker.energy<attacker.maxEnergy*0.5){
-        logMsg('Not enough energy.');
-        return;
-    }
     attacker.energy=Math.max(0,attacker.energy - Math.floor(attacker.maxEnergy*0.5));
     const defender=players[1-current];
     if(Math.random()<0.05){
@@ -414,10 +426,13 @@ function checkVictory(){
             document.getElementById('defeat-screen').classList.add('hidden');
             document.getElementById('winner').textContent=`${players[0].name} Wins!`;
             const reward=currentBattleIsBoss?20:10;
+            lastRewardCoins=reward;
             coins+=reward;
             cpuCoins+=10;
             logMsg(`You earned ${reward} coins!`);
-            tryLoot();
+            lastLootMsg=tryLoot();
+            document.getElementById('victory-img').src=players[0].img;
+            document.getElementById('victory-reward').textContent=`+${reward} coins. ${lastLootMsg}`;
             addXP(50);
             document.getElementById('next-btn').classList.remove('hidden');
             showConfetti();
@@ -425,9 +440,13 @@ function checkVictory(){
             document.getElementById('victory-screen').classList.add('hidden');
             document.getElementById('defeat-screen').classList.remove('hidden');
             document.getElementById('loser').textContent=`Defeated by ${players[1].name}`;
+            lastRewardCoins=5;
             coins+=5;
             cpuCoins+=20;
+            lastLootMsg='';
             logMsg('You earned 5 coins.');
+            document.getElementById('defeat-img').src=players[1].img;
+            document.getElementById('defeat-reward').textContent=`+5 coins.`;
             document.getElementById('next-btn').classList.add('hidden');
         }
         updateCoins();
@@ -532,27 +551,34 @@ function buyArtifact(){ purchase('artifact',20); }
 function giveRandomLoot(){
     const typeRoll=Math.random();
     const rarity=randomRarity();
+    let msg='';
     if(typeRoll<0.33){
         const name=randomItemName('weapon',rarity);
         inventory.weapon[rarity].push(name);
-        logMsg(`Found ${colorName(name,rarity)}!`);
+        msg=`Found ${name} (${rarity.charAt(0).toUpperCase()+rarity.slice(1)})!`;
+        logMsg(colorName(msg,rarity));
     }else if(typeRoll<0.66){
         const name=randomItemName('armor',rarity);
         inventory.armor[rarity].push(name);
-        logMsg(`Found ${colorName(name,rarity)}!`);
+        msg=`Found ${name} (${rarity.charAt(0).toUpperCase()+rarity.slice(1)})!`;
+        logMsg(colorName(msg,rarity));
     }else{
         const name=randomItemName('artifact',rarity);
         inventory.artifact[rarity].push(name);
-        logMsg(`Found ${colorName(name,rarity)}!`);
+        msg=`Found ${name} (${rarity.charAt(0).toUpperCase()+rarity.slice(1)})!`;
+        logMsg(colorName(msg,rarity));
     }
     updateCoins();
+    return msg;
 }
 
 function tryLoot(){
     if(Math.random()<0.3){
-        giveRandomLoot();
+        return giveRandomLoot();
     }else{
-        logMsg('No drops this time.');
+        const msg='No drops this time.';
+        logMsg(msg);
+        return msg;
     }
 }
 
@@ -569,16 +595,11 @@ function addXP(amount){
     updateCoins();
 }
 
-function closeShop(){
-    document.getElementById('shop-screen').classList.add('hidden');
-}
-
 function showCustom(){
+    populateCustom();
     document.getElementById('loadout-screen').classList.add('hidden');
     document.getElementById('custom-screen').classList.remove('hidden');
-    populateCustom();
 }
-
 function hideCustom(){
     document.getElementById('custom-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
@@ -644,9 +665,12 @@ function equipSelected(type){
 
 function goBack(){
     document.getElementById('loadout-screen').classList.add('hidden');
+    document.getElementById('custom-screen').classList.add('hidden');
+    document.getElementById('battle-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('selection-screen').classList.remove('hidden');
+    hideBack();
 }
 
 function startBossBattle(){
@@ -691,7 +715,7 @@ document.getElementById('next-btn').onclick=nextBattle;
 document.getElementById('shop-btn').onclick=()=>{
     document.getElementById('shop-screen').classList.toggle('hidden');
 };
-document.getElementById('back-btn').onclick=goBack;
+document.getElementById('menu-back').onclick=goBack;
 document.getElementById('boss-btn').onclick=startBossBattle;
 document.getElementById('custom-btn').onclick=showCustom;
 document.getElementById('custom-back').onclick=hideCustom;
