@@ -107,14 +107,10 @@ function updateCoins(){
     updateInventoryUI();
 }
 
-function showBack(){
-    const btn=document.getElementById('menu-back');
-    if(btn) btn.classList.remove('hidden');
+function showBack(screen){
+    history.pushState({screen}, "");
 }
-function hideBack(){
-    const btn=document.getElementById('menu-back');
-    if(btn) btn.classList.add('hidden');
-}
+function hideBack(){}
 
 function updateInventoryUI(){
     const w=document.getElementById('inv-weapon');
@@ -179,15 +175,15 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
             slots:data.slots
         };
         document.body.className=backgrounds[avatar]||'';
-    resetShop();
-    showLoadout();
+        resetShop();
+        showLoadout();
     });
 });
 
 function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
-    showBack();
+    showBack("loadout");
     document.getElementById('loadout-name').textContent=players[0].name;
     document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
     document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
@@ -204,7 +200,7 @@ function startBattle(){
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('battle-screen').classList.remove('hidden');
-    showBack();
+    showBack("battle");
     resetShop();
     const keys=Object.keys(avatars);
     const enemyKey=keys[Math.floor(Math.random()*keys.length)];
@@ -611,7 +607,7 @@ function closeShop(){
 function showCustom(){
     document.getElementById('loadout-screen').classList.add('hidden');
     document.getElementById('custom-screen').classList.remove('hidden');
-    showBack();
+    showBack("custom");
     populateCustom();
 }
 
@@ -730,7 +726,6 @@ document.getElementById('next-btn').onclick=nextBattle;
 document.getElementById('shop-btn').onclick=()=>{
     document.getElementById('shop-screen').classList.toggle('hidden');
 };
-document.getElementById('menu-back').onclick=goBack;
 document.getElementById('boss-btn').onclick=startBossBattle;
 document.getElementById('custom-btn').onclick=showCustom;
 document.getElementById('custom-back').onclick=hideCustom;
@@ -743,3 +738,7 @@ document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previ
 document.getElementById('buy-armor-btn').addEventListener('mouseleave',clearPreview);
 document.getElementById('buy-artifact-btn').addEventListener('mouseenter',()=>previewItem('artifact'));
 document.getElementById('buy-artifact-btn').addEventListener('mouseleave',clearPreview);
+
+// Initialize history and handle browser back
+history.replaceState({screen:"selection"}, "");
+window.addEventListener("popstate", ()=>{ goBack(); });
