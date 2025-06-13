@@ -26,6 +26,8 @@ let stun=[0,0];
 let poison=[0,0];
 let cooldown=[0,0];
 let cooldownBase=[3,3];
+let cpuPlannedAction=null;
+let cpuDefendMsg='';
 let coins=0;
 let inventory={
     weapon:{common:[],rare:[],epic:[],legendary:[]},
@@ -63,6 +65,27 @@ function setButtons(enabled){
     document.getElementById('attack-btn').disabled=!enabled;
     document.getElementById('defend-btn').disabled=!enabled;
     document.getElementById('special-btn').disabled=!enabled;
+}
+
+function chooseCpuAction(){
+    const idx=1;
+    defending[idx]=false;
+    defendMult[idx]=1;
+    let choices=['attack','defend'];
+    if(cooldown[idx]===0 && players[idx].energy>=players[idx].maxEnergy*0.5){
+        choices.push('special');
+    }
+    cpuPlannedAction=choices[Math.floor(Math.random()*choices.length)];
+    if(cpuPlannedAction==='defend'){
+        const roll=Math.random();
+        if(roll<0.02){cpuDefendMsg=`${players[idx].name} prepares a perfect block!`;defendMult[idx]=0;}
+        else if(roll<0.10){cpuDefendMsg=`${players[idx].name} braces to block 75% damage.`;defendMult[idx]=0.25;}
+        else if(roll<0.35){cpuDefendMsg=`${players[idx].name} braces to block 50% damage.`;defendMult[idx]=0.5;}
+        else{cpuDefendMsg=`${players[idx].name} braces to block 25% damage.`;defendMult[idx]=0.75;}
+        defending[idx]=true;
+    }else{
+        cpuDefendMsg='';
+    }
 }
 
 function saveProgress(){
@@ -292,12 +315,16 @@ function endTurn(){
 }
 
 function cpuAction(){
-    if(cooldown[current]==0 && players[current].energy>=players[current].cost && Math.random()<0.5){
+    if(cpuPlannedAction==='defend'){
+        logMsg(cpuDefendMsg);
+        cpuPlannedAction=null;
+        endTurn();
+    }else if(cpuPlannedAction==='special'){
+        cpuPlannedAction=null;
         special();
-    }else if(Math.random()<0.6){
+    }else{ // attack by default
+        cpuPlannedAction=null;
         attack();
-    }else{
-        defend();
     }
 }
 
@@ -541,6 +568,7 @@ function purchase(type,cost){
         const {name,rarity}=shopStock[type];
         inventory[type][rarity].push(name);
         logMsg(`Purchased ${colorName(name,rarity)}.`);
+        refreshShopItem(type);
         nextPurchase[type]=null;
         document.getElementById(`buy-${type}-btn`).removeAttribute('title');
         document.getElementById('preview').textContent='';
@@ -723,9 +751,22 @@ function clearPreview(e){
     document.getElementById('preview').textContent='';
 }
 
-document.getElementById('attack-btn').onclick=attack;
-document.getElementById('defend-btn').onclick=defend;
-document.getElementById('special-btn').onclick=special;
+function playerAttack(){
+    chooseCpuAction();
+    attack();
+}
+function playerDefend(){
+    chooseCpuAction();
+    defend();
+}
+function playerSpecial(){
+    chooseCpuAction();
+    special();
+}
+
+document.getElementById('attack-btn').onclick=playerAttack;
+document.getElementById('defend-btn').onclick=playerDefend;
+document.getElementById('special-btn').onclick=playerSpecial;
 document.getElementById('start-btn').onclick=startBattle;
 document.getElementById('next-btn').onclick=nextBattle;
 document.getElementById('shop-btn').onclick=()=>{
