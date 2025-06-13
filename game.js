@@ -452,6 +452,7 @@ function special(){
 function checkVictory(){
     if(players[0].hp<=0 || players[1].hp<=0){
         document.getElementById('battle-screen').classList.add('hidden');
+        hideBack();  // newly added
         const playerWon = players[1].hp<=0;
         if(playerWon){
             document.getElementById('victory-screen').classList.remove('hidden');
