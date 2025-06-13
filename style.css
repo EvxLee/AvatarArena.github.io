@@ -169,7 +169,7 @@ button{
     margin:10px auto;
     display:inline-block;
     background:#f7f7f7;
-    text-align:left;
+    text-align:center;
 }
 #inv-weapon{color:#e74c3c;}
 #inv-armor{color:#3498db;}
