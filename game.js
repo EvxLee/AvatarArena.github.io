@@ -25,6 +25,10 @@ const backgrounds={
     Mage:'mage-bg',
     Rogue:'rogue-bg'
 };
+const nextPurchase={weapon:null,armor:null,artifact:null};
+function colorName(name,rarity){
+    return `<span class="rarity-${rarity}">${name}</span>`;
+}
 let players=[];
 let current=0;
 let defending=[false,false];
@@ -147,6 +151,7 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
             maxHp:data.hp,
             maxEnergy:data.energy,
             energy:data.energy,
+            img:`assets/avatars/${avatar.toLowerCase()}.png`,
             equipment:{weapon:[],armor:[],artifact:[]},
             slots:data.slots
         };
@@ -159,7 +164,7 @@ function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
     document.getElementById('loadout-name').textContent=players[0].name;
-    document.getElementById('loadout-model').textContent=players[0].emoji;
+    document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
     document.getElementById('loadout-stats').textContent=`HP: ${players[0].maxHp} ATK: ${players[0].atk} DEF: ${players[0].def}`;
     document.getElementById('lore').textContent=players[0].lore;
     updateCoins();
@@ -182,6 +187,7 @@ function startBattle(){
         maxHp:avatars[enemyKey].hp,
         maxEnergy:avatars[enemyKey].energy,
         energy:avatars[enemyKey].energy,
+        img:`assets/avatars/${enemyKey.toLowerCase()}.png`,
         equipment:{weapon:[],armor:[],artifact:[]},
         slots:avatars[enemyKey].slots
     };
@@ -214,7 +220,7 @@ function startBattle(){
 function updateUI(){
     for(let i=0;i<2;i++){
         document.getElementById('p'+(i+1)+'-name').textContent=players[i].name;
-        document.getElementById('p'+(i+1)+'-model').textContent=players[i].emoji;
+        document.getElementById('p'+(i+1)+'-model').innerHTML=`<img src="${players[i].img}" class="battle-img">`;
         document.getElementById('p'+(i+1)+'-stats').textContent=`HP: ${Math.max(0,players[i].hp)}/${players[i].maxHp} ATK: ${players[i].atk} DEF: ${players[i].def} EN: ${players[i].energy}/${players[i].maxEnergy}`;
         const p=players[i];
         document.getElementById('p'+(i+1)+'-equip').textContent=
@@ -425,124 +431,74 @@ function equipWeapon(){
         logMsg('No weapon slots left.');
         return;
     }
-    let rarity='';
-    let name='';
-    if(inventory.weapon.epic.length){
-        name=inventory.weapon.epic.pop(); rarity='epic'; players[0].atk+=4;
-    }else if(inventory.weapon.rare.length){
-        name=inventory.weapon.rare.pop(); rarity='rare'; players[0].atk+=3;
-    }else if(inventory.weapon.common.length){
-        name=inventory.weapon.common.pop(); rarity='common'; players[0].atk+=2;
-    }else{
-        logMsg('No weapons in inventory.');
-        return;
-    }
+    const rarity=randomRarity();
+    const name=randomItemName('weapon',rarity);
     players[0].equipment.weapon.push(name);
+    inventory.weapon[rarity].push(name);
+    players[0].atk+=rarity==='epic'?4:rarity==='rare'?3:2;
+    logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateUI();
 }
-
 function equipArmor(){
     if(players[0].equipment.armor.length>=players[0].slots.armor){
         logMsg('No armor slots left.');
         return;
     }
-    let rarity='';
-    let name='';
-    if(inventory.armor.epic.length){
-        name=inventory.armor.epic.pop(); rarity='epic'; players[0].def+=4;
-    }else if(inventory.armor.rare.length){
-        name=inventory.armor.rare.pop(); rarity='rare'; players[0].def+=3;
-    }else if(inventory.armor.common.length){
-        name=inventory.armor.common.pop(); rarity='common'; players[0].def+=2;
-    }else{
-        logMsg('No armor in inventory.');
-        return;
-    }
+    const rarity=randomRarity();
+    const name=randomItemName('armor',rarity);
     players[0].equipment.armor.push(name);
+    inventory.armor[rarity].push(name);
+    players[0].def+=rarity==='epic'?4:rarity==='rare'?3:2;
+    logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateUI();
 }
-
 function equipArtifact(){
     if(players[0].equipment.artifact.length>=players[0].slots.artifact){
         logMsg('No artifact slots left.');
         return;
     }
-    let rarity='';
-    let name='';
-    if(inventory.artifact.epic.length){
-        name=inventory.artifact.epic.pop(); rarity='epic'; cooldownBase[0]=Math.max(1,cooldownBase[0]-3); players[0].maxHp+=30; players[0].maxEnergy+=15;
-    }else if(inventory.artifact.rare.length){
-        name=inventory.artifact.rare.pop(); rarity='rare'; cooldownBase[0]=Math.max(1,cooldownBase[0]-2); players[0].maxHp+=20; players[0].maxEnergy+=10;
-    }else if(inventory.artifact.common.length){
-        name=inventory.artifact.common.pop(); rarity='common'; cooldownBase[0]=Math.max(1,cooldownBase[0]-1); players[0].maxHp+=10; players[0].maxEnergy+=5;
-    }else{
-        logMsg('No artifacts in inventory.');
-        return;
-    }
-    players[0].energy=players[0].maxEnergy;
+    const rarity=randomRarity();
+    const name=randomItemName('artifact',rarity);
     players[0].equipment.artifact.push(name);
+    inventory.artifact[rarity].push(name);
+    if(rarity==='epic'){cooldownBase[0]=Math.max(1,cooldownBase[0]-3);players[0].maxHp+=30;players[0].maxEnergy+=15;}
+    else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);players[0].maxHp+=20;players[0].maxEnergy+=10;}
+    else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);players[0].maxHp+=10;players[0].maxEnergy+=5;}
+    players[0].energy=players[0].maxEnergy;
+    logMsg(`Equipped ${colorName(name,rarity)}.`);
     updateCoins();
-    updateEquipInfo();
-    updateLoadout();
-    updateUI();
 }
 
 function randomRarity(){
     const roll=Math.random();
-    if(roll<0.1) return 'epic';
-    if(roll<0.4) return 'rare';
-    return 'common';
+    if(roll<0.6) return 'common';
+    if(roll<0.9) return 'rare';
+    return 'epic';
 }
 
 function randomItemName(type,rarity){
-    const arr=itemNames[type][rarity];
-    return arr[Math.floor(Math.random()*arr.length)];
+    const list=itemNames[type][rarity];
+    return list[Math.floor(Math.random()*list.length)];
 }
 
-function buyWeapon(){
-    if(coins>=10){
-        coins-=10;
-        const r=randomRarity();
-        const name=randomItemName('weapon',r);
-        inventory.weapon[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
+function purchase(type,cost){
+    if(coins>=cost){
+        coins-=cost;
+        const {name,rarity}=nextPurchase[type]||{name:randomItemName(type,'common'),rarity:'common'};
+        inventory[type][rarity].push(name);
+        logMsg(`Purchased ${colorName(name,rarity)}.`);
+        nextPurchase[type]=null;
+        document.getElementById(`buy-${type}-btn`).removeAttribute('title');
+        document.getElementById('preview').textContent='';
         updateCoins();
     }else{
         logMsg('Not enough coins.');
     }
 }
 
-function buyArmor(){
-    if(coins>=10){
-        coins-=10;
-        const r=randomRarity();
-        const name=randomItemName('armor',r);
-        inventory.armor[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
-        updateCoins();
-    }else{
-        logMsg('Not enough coins.');
-    }
-}
-
-function buyArtifact(){
-    if(coins>=20){
-        coins-=20;
-        const r=randomRarity();
-        const name=randomItemName('artifact',r);
-        inventory.artifact[r].push(name);
-        logMsg(`Bought ${name} (${r}).`);
-        updateCoins();
-    }else{
-        logMsg('Not enough coins.');
-    }
-}
+function buyWeapon(){ purchase('weapon',10); }
+function buyArmor(){ purchase('armor',10); }
+function buyArtifact(){ purchase('artifact',20); }
 
 function giveRandomLoot(){
     const typeRoll=Math.random();
@@ -550,15 +506,15 @@ function giveRandomLoot(){
     if(typeRoll<0.33){
         const name=randomItemName('weapon',rarity);
         inventory.weapon[rarity].push(name);
-        logMsg(`Found ${name}!`);
+        logMsg(`Found ${colorName(name,rarity)}!`);
     }else if(typeRoll<0.66){
         const name=randomItemName('armor',rarity);
         inventory.armor[rarity].push(name);
-        logMsg(`Found ${name}!`);
+        logMsg(`Found ${colorName(name,rarity)}!`);
     }else{
         const name=randomItemName('artifact',rarity);
         inventory.artifact[rarity].push(name);
-        logMsg(`Found ${name}!`);
+        logMsg(`Found ${colorName(name,rarity)}!`);
     }
     updateCoins();
 }
@@ -601,9 +557,18 @@ function hideCustom(){
 
 function populateCustom(){
     const p=players[0];
-    document.getElementById('weapon-list').textContent=p.equipment.weapon.join(', ')||'None';
-    document.getElementById('armor-list').textContent=p.equipment.armor.join(', ')||'None';
-    document.getElementById('artifact-list').textContent=p.equipment.artifact.join(', ')||'None';
+    const findRarity=(n)=>{
+        for(const cat of Object.values(itemNames)){
+            for(const r in cat){
+                if(cat[r].includes(n)) return r;
+            }
+        }
+        return 'common';
+    };
+    const colorize=(name)=>colorName(name,findRarity(name));
+    document.getElementById('weapon-list').innerHTML=p.equipment.weapon.map(colorize).join(', ')||'None';
+    document.getElementById('armor-list').innerHTML=p.equipment.armor.map(colorize).join(', ')||'None';
+    document.getElementById('artifact-list').innerHTML=p.equipment.artifact.map(colorize).join(', ')||'None';
 
     const wSel=document.getElementById('weapon-select');
     const aSel=document.getElementById('armor-select');
@@ -665,6 +630,22 @@ function showConfetti(){
         document.body.appendChild(span);
         setTimeout(()=>span.remove(),1000);
     }
+}
+
+function previewItem(type){
+    const rarity=randomRarity();
+    const name=randomItemName(type,rarity);
+    nextPurchase[type]={name,rarity};
+    document.getElementById(`buy-${type}-btn`).title=name;
+    document.getElementById('preview').innerHTML=colorName(name,rarity);
+}
+
+function clearPreview(e){
+    const id=e.currentTarget.id;
+    const type=id.split('-')[1];
+    nextPurchase[type]=null;
+    e.currentTarget.removeAttribute('title');
+    document.getElementById('preview').textContent='';
 }
 
 document.getElementById('attack-btn').onclick=attack;
