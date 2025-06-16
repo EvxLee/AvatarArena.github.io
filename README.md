@@ -9,4 +9,5 @@ locally and backgrounds shift to match your chosen class.
 
 ## Playing
 Play the latest version at: <https://evxlee.github.io/Test.github.io/>
+
 Recommended to play at 75% browser zoom for best experience.
