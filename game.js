@@ -367,11 +367,13 @@ function defend(){
 function special(){
     if(cooldown[current]>0){
         logMsg(`Special on cooldown: ${cooldown[current]} turn(s) left.`);
+        if(current===1) endTurn();
         return;
     }
     const attacker=players[current];
     if(attacker.energy<attacker.maxEnergy*0.5){
         logMsg('Not enough energy.');
+        if(current===1) endTurn();
         return;
     }
     attacker.energy=Math.max(0,attacker.energy - Math.floor(attacker.maxEnergy*0.5));
