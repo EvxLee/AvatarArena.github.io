@@ -47,6 +47,7 @@ let isBoss=false;
 let currentBattleIsBoss=false;
 let lastRewardCoins=0;
 let lastLootMsg='';
+let lastBattleWon=false;
 const log=document.getElementById('log');
 function colorLog(msg){
     if(players.length>0){
@@ -213,6 +214,7 @@ function startBattle(){
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('battle-screen').classList.remove('hidden');
     showBack("battle");
+    lastBattleWon=false;
     const lvlEl=document.getElementById('level-indicator');
     if(isCampaign){
         lvlEl.textContent=`Level ${campaignLevel}`;
@@ -369,8 +371,7 @@ function attack(){
         endTurn();
         return;
     }
-    let defense=defender.def;
-    let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+    let dmg=attacker.atk;
     if(defending[1-current]){
         dmg=Math.round(dmg*defendMult[1-current]);
     }
@@ -392,15 +393,19 @@ function defend(){
     if(roll<0.02){
         defendMult[current]=0;
         logMsg(`${players[current].name} prepares a perfect block!`);
-    }else if(roll<0.10){
+    }else if(roll<0.05){
         defendMult[current]=0.25;
         logMsg(`${players[current].name} braces to block 75% damage.`);
-    }else if(roll<0.35){
+    }else if(roll<0.10){
         defendMult[current]=0.5;
         logMsg(`${players[current].name} braces to block 50% damage.`);
-    }else{
+    }else if(roll<0.20){
         defendMult[current]=0.75;
         logMsg(`${players[current].name} braces to block 25% damage.`);
+    }else{
+        const pct=Math.min(0.99, players[current].def/100);
+        defendMult[current]=1-pct;
+        logMsg(`${players[current].name} blocks ${Math.round(pct*100)}% damage.`);
     }
     endTurn();
 }
@@ -428,8 +433,7 @@ function special(){
     }
     const name=attacker.name;
     if(name.includes('Knight')){
-        let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        let dmg=attacker.atk;
         if(defending[1-current]){
             dmg=Math.round(dmg*defendMult[1-current]);
         }
@@ -440,8 +444,7 @@ function special(){
         if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }else if(name.includes('Mage')){
         if(Math.random()<0.7){
-            let defense=defender.def;
-            let dmg=Math.max(10,Math.round(attacker.atk*2 - defense/2));
+            let dmg=Math.max(15,Math.round(attacker.atk*2));
             if(defending[1-current]){
                 dmg=Math.round(dmg*defendMult[1-current]);
             }
@@ -453,8 +456,7 @@ function special(){
             logMsg(`${attacker.name}'s Fireball missed!`);
         }
     }else if(name.includes('Rogue')){
-        let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        let dmg=attacker.atk;
         if(defending[1-current]){
             dmg=Math.round(dmg*defendMult[1-current]);
         }
@@ -464,8 +466,7 @@ function special(){
         logMsg(`${attacker.name} uses Poison Dagger for ${dmg} damage. Enemy poisoned!`);
         if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }else if(name.includes('Ghoul')){
-        let defense=defender.def;
-        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        let dmg=attacker.atk;
         if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
         defender.hp-=dmg;
         attacker.hp=Math.min(attacker.maxHp, attacker.hp+dmg);
@@ -479,15 +480,13 @@ function special(){
         stun[1-current]=1;
         logMsg(`${attacker.name} lets out a terrifying scream!`);
     }else if(name.includes('Cyclops')){
-        let defense=defender.def;
-        let dmg=Math.max(15,Math.round(attacker.atk*2 - defense/2));
+        let dmg=Math.max(15,Math.round(attacker.atk*2));
         if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
         defender.hp-=dmg;
         logMsg(`${attacker.name} smashes for ${dmg} damage!`);
         if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }else if(name.includes('Demon')){
-        let defense=defender.def;
-        let dmg=Math.max(12,Math.round(attacker.atk*1.5 - defense/2));
+        let dmg=Math.max(15,Math.round(attacker.atk*2));
         if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
         defender.hp-=dmg;
         poison[1-current]=3;
@@ -502,8 +501,7 @@ function special(){
         attacker.def+=4;
         logMsg(`${attacker.name}'s skin hardens like stone, increasing defense!`);
     }else if(name.includes('Vampire')){
-        let defense=defender.def;
-        let dmg=Math.max(12,Math.round(attacker.atk - defense/2));
+        let dmg=Math.max(15,Math.round(attacker.atk*2));
         if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
         defender.hp-=dmg;
         attacker.hp=Math.min(attacker.maxHp, attacker.hp+Math.round(dmg/2));
@@ -513,8 +511,7 @@ function special(){
         attacker.hp=Math.min(attacker.maxHp, attacker.hp+30);
         logMsg(`${attacker.name} regenerates 30 HP!`);
     }else if(name.includes('Dragon')){
-        let defense=defender.def;
-        let dmg=Math.max(25,Math.round(attacker.atk*2 - defense/2));
+        let dmg=Math.max(25,Math.round(attacker.atk*2));
         if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
         defender.hp-=dmg;
         logMsg(`${attacker.name} breathes fire for ${dmg} damage!`);
@@ -529,6 +526,7 @@ function checkVictory(){
     if(players[0].hp<=0 || players[1].hp<=0){
         document.getElementById('battle-screen').classList.add('hidden');
         const playerWon = players[1].hp<=0;
+        lastBattleWon = playerWon;
         if(playerWon){
             document.getElementById('victory-screen').classList.remove('hidden');
             document.getElementById('defeat-screen').classList.add('hidden');
@@ -662,6 +660,9 @@ function purchase(type,cost){
         const {name,rarity}=shopStock[type];
         inventory[type][rarity].push(name);
         logMsg(`Purchased ${colorName(name,rarity)}.`);
+        // Immediately generate a new item for the purchased slot
+        const r=randomRarity();
+        shopStock[type]={name:randomItemName(type,r),rarity:r};
         nextPurchase[type]=null;
         document.getElementById(`buy-${type}-btn`).removeAttribute('title');
         document.getElementById('preview').textContent='';
@@ -815,8 +816,13 @@ function startCampaign(){
         alert('Monsters are still spawning. Please try again.');
         return;
     }
+    if(!isCampaign){
+        campaignLevel=1;
+    }else if(lastBattleWon){
+        campaignLevel++;
+    }
     isCampaign=true;
-    campaignLevel=1;
+    lastBattleWon=false;
     battleNumber=1;
     startBattle();
 }
