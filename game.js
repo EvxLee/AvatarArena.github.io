@@ -282,24 +282,27 @@ function endTurn(){
 }
 
 function cpuAction(){
-    const canSpecial = cooldown[current] === 0 &&
-        players[current].energy >= players[current].cost;
-    let roll = Math.random();
-    if(canSpecial){
-        if(roll < 1/3){
-            attack();
-        }else if(roll < 2/3){
-            defend();
-        }else{
-            special();
-        }
+    const actor=players[current];
+    const ready=cooldown[current]===0 && actor.energy>=actor.maxEnergy*0.5;
+    let choice;
+    if(ready){
+        const roll=Math.floor(Math.random()*3);
+        choice=roll===0?'attack':roll===1?'defend':'special';
     }else{
-        if(roll < 0.5){
-            attack();
-        }else{
-            defend();
-        }
-    }    
+        choice=Math.random()<0.5?'attack':'defend';
+    }
+    if(choice==='attack') attack();
+    else if(choice==='defend') defend();
+    else special();
+}
+
+let cpuTimer=null;
+function scheduleCpuTurn(){
+    if(cpuTimer) clearTimeout(cpuTimer);
+    cpuTimer=setTimeout(()=>{
+        cpuTimer=null;
+        if(current===1) cpuAction();
+    },500);
 }
 
 function updateTurn(){
@@ -312,7 +315,7 @@ function updateTurn(){
         return;
     }
     if(current===1){
-        setTimeout(cpuAction,500);
+        scheduleCpuTurn();
     }
 }
 
@@ -724,9 +727,24 @@ function clearPreview(e){
     document.getElementById('preview').textContent='';
 }
 
-document.getElementById('attack-btn').onclick=attack;
-document.getElementById('defend-btn').onclick=defend;
-document.getElementById('special-btn').onclick=special;
+function playerAttack(){
+    if(current!==0) return;
+    attack();
+}
+
+function playerDefend(){
+    if(current!==0) return;
+    defend();
+}
+
+function playerSpecial(){
+    if(current!==0) return;
+    special();
+}
+
+document.getElementById('attack-btn').onclick=playerAttack;
+document.getElementById('defend-btn').onclick=playerDefend;
+document.getElementById('special-btn').onclick=playerSpecial;
 document.getElementById('start-btn').onclick=startBattle;
 document.getElementById('next-btn').onclick=nextBattle;
 document.getElementById('shop-btn').onclick=()=>{
