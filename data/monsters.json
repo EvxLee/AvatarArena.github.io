@@ -1,0 +1,12 @@
+[
+  {"name":"Ghoul","hp":100,"atk":8,"def":6,"energy":40,"special":"Life Drain"},
+  {"name":"Skeleton","hp":110,"atk":9,"def":8,"energy":40,"special":"Bone Shield"},
+  {"name":"Banshee","hp":120,"atk":10,"def":8,"energy":45,"special":"Scream"},
+  {"name":"Cyclops","hp":140,"atk":12,"def":10,"energy":45,"special":"Smash"},
+  {"name":"Demon","hp":160,"atk":14,"def":12,"energy":50,"special":"Hellfire"},
+  {"name":"Minotaur","hp":180,"atk":16,"def":14,"energy":50,"special":"Charge"},
+  {"name":"Gargoyle","hp":200,"atk":17,"def":16,"energy":55,"special":"Stone Skin"},
+  {"name":"Vampire","hp":210,"atk":19,"def":17,"energy":55,"special":"Night Bite"},
+  {"name":"Hydra","hp":230,"atk":21,"def":19,"energy":60,"special":"Regenerate"},
+  {"name":"Dragon","hp":250,"atk":24,"def":20,"energy":60,"special":"Fire Breath"}
+]
