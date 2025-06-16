@@ -21,6 +21,14 @@ let shopStock={weapon:null,armor:null,artifact:null};
 function colorName(name,rarity){
     return `<span class="rarity-${rarity}">${name}</span>`;
 }
+function getRarityByName(name){
+    for(const cat of Object.values(itemNames)){
+        for(const r in cat){
+            if(cat[r].includes(name)) return r;
+        }
+    }
+    return 'common';
+}
 let players=[];
 let current=0;
 let defending=[false,false];
@@ -745,18 +753,29 @@ function hideCustom(){
 
 function populateCustom(){
     const p=players[0];
-    const findRarity=(n)=>{
-        for(const cat of Object.values(itemNames)){
-            for(const r in cat){
-                if(cat[r].includes(n)) return r;
-            }
-        }
-        return 'common';
+    const colorize=(name)=>colorName(name,getRarityByName(name));
+
+    const buildList=(el,arr,type)=>{
+        el.innerHTML='';
+        if(!arr.length){el.textContent='None';return;}
+        arr.forEach((name,i)=>{
+            const div=document.createElement('div');
+            div.className='equip-item';
+            const span=document.createElement('span');
+            span.innerHTML=colorize(name);
+            const btn=document.createElement('button');
+            btn.textContent='✖️';
+            btn.className='unequip-btn';
+            btn.onclick=()=>unequipItem(type,i);
+            div.appendChild(span);
+            div.appendChild(btn);
+            el.appendChild(div);
+        });
     };
-    const colorize=(name)=>colorName(name,findRarity(name));
-    document.getElementById('weapon-list').innerHTML=p.equipment.weapon.map(colorize).join(', ')||'None';
-    document.getElementById('armor-list').innerHTML=p.equipment.armor.map(colorize).join(', ')||'None';
-    document.getElementById('artifact-list').innerHTML=p.equipment.artifact.map(colorize).join(', ')||'None';
+   
+    buildList(document.getElementById('weapon-list'),p.equipment.weapon,'weapon');
+    buildList(document.getElementById('armor-list'),p.equipment.armor,'armor');
+    buildList(document.getElementById('artifact-list'),p.equipment.artifact,'artifact');
 
     const wSel=document.getElementById('weapon-select');
     const aSel=document.getElementById('armor-select');
@@ -793,6 +812,33 @@ function equipSelected(type){
         else if(rarity==='rare'){cooldownBase[0]=Math.max(1,cooldownBase[0]-2);p.maxHp+=20;p.maxEnergy+=10;}
         else {cooldownBase[0]=Math.max(1,cooldownBase[0]-1);p.maxHp+=10;p.maxEnergy+=5;}
         p.energy=p.maxEnergy;
+    }
+    populateCustom();
+    updateCoins();
+    updateEquipInfo();
+    updateLoadout();
+    updateUI();
+}
+function unequipItem(type,index){
+    const p=players[0];
+    const name=p.equipment[type][index];
+    if(!name) return;
+    const rarity=getRarityByName(name);
+    p.equipment[type].splice(index,1);
+    inventory[type][rarity].push(name);
+    if(type==='weapon'){
+        p.atk-=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
+    }
+    if(type==='armor'){
+        p.def-=rarity==='legendary'?8:rarity==='epic'?6:rarity==='rare'?4:2;
+    }
+    if(type==='artifact'){
+        if(rarity==='legendary'){cooldownBase[0]+=4;p.maxHp-=40;p.maxEnergy-=20;}
+        else if(rarity==='epic'){cooldownBase[0]+=3;p.maxHp-=30;p.maxEnergy-=15;}
+        else if(rarity==='rare'){cooldownBase[0]+=2;p.maxHp-=20;p.maxEnergy-=10;}
+        else {cooldownBase[0]+=1;p.maxHp-=10;p.maxEnergy-=5;}
+        p.hp=Math.min(p.hp,p.maxHp);
+        p.energy=Math.min(p.energy,p.maxEnergy);
     }
     populateCustom();
     updateCoins();
