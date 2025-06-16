@@ -282,13 +282,24 @@ function endTurn(){
 }
 
 function cpuAction(){
-    if(cooldown[current]==0 && players[current].energy>=players[current].cost && Math.random()<0.5){
-        special();
-    }else if(Math.random()<0.6){
-        attack();
+    const canSpecial = cooldown[current] === 0 &&
+        players[current].energy >= players[current].cost;
+    let roll = Math.random();
+    if(canSpecial){
+        if(roll < 1/3){
+            attack();
+        }else if(roll < 2/3){
+            defend();
+        }else{
+            special();
+        }
     }else{
-        defend();
-    }
+        if(roll < 0.5){
+            attack();
+        }else{
+            defend();
+        }
+    }    
 }
 
 function updateTurn(){
