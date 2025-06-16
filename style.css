@@ -233,6 +233,10 @@ button{
 
 #p1-name{color:#0a0;}
 #p2-name{color:#a00;}
+.log-player-name{color:#0a0;font-weight:bold;}
+.log-enemy-name{color:#a00;font-weight:bold;}
+
+#level-indicator{margin-top:0;}
 
 body.knight-bg{
     background:linear-gradient(#d4d4d4,#a0a0a0);

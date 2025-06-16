@@ -48,12 +48,16 @@ let currentBattleIsBoss=false;
 let lastRewardCoins=0;
 let lastLootMsg='';
 const log=document.getElementById('log');
-function logMsg(msg){
-    msg=msg.replace(/CPU/g,'<span class="cpu-text">CPU</span>');
-    msg=msg.replace(/Player/g,'<span class="player-text">Player</span>');
-    log.innerHTML+=msg+'<br>';
-    log.scrollTop=log.scrollHeight;
+function colorLog(msg){
+    if(players.length>0){
+        msg=msg.replaceAll(players[0].name,`<span class="log-player-name">${players[0].name}</span>`);
+    }
+    if(players.length>1){
+        msg=msg.replaceAll(players[1].name,`<span class="log-enemy-name">${players[1].name}</span>`);
+    }
+    return msg;
 }
+function logMsg(msg){log.innerHTML+=colorLog(msg)+'<br>';log.scrollTop=log.scrollHeight;}
 
 loadProgress();
 updateCoins();
@@ -188,6 +192,9 @@ document.querySelectorAll('.avatar-grid button').forEach(btn=>{
 function showLoadout(){
     document.getElementById('selection-screen').classList.add('hidden');
     document.getElementById('loadout-screen').classList.remove('hidden');
+    document.getElementById('victory-screen').classList.add('hidden');
+    document.getElementById('defeat-screen').classList.add('hidden');
+    document.getElementById('battle-screen').classList.add('hidden');
     showBack("loadout");
     document.getElementById('loadout-name').textContent=players[0].name;
     document.getElementById('loadout-model').innerHTML=`<img src="${players[0].img}" class="battle-img">`;
@@ -206,6 +213,14 @@ function startBattle(){
     document.getElementById('defeat-screen').classList.add('hidden');
     document.getElementById('battle-screen').classList.remove('hidden');
     showBack("battle");
+    const lvlEl=document.getElementById('level-indicator');
+    if(isCampaign){
+        lvlEl.textContent=`Level ${campaignLevel}`;
+        lvlEl.classList.remove('hidden');
+    }else{
+        lvlEl.textContent='';
+        lvlEl.classList.add('hidden');
+    }
     resetShop();
     let enemy;
     currentBattleIsBoss=isBoss;
@@ -797,7 +812,7 @@ function goBack(){
 
 function startCampaign(){
     if(!monstersLoaded){
-        alert('Monsters are still loading. Please try again.');
+        alert('Monsters are still spawning. Please try again.');
         return;
     }
     isCampaign=true;
