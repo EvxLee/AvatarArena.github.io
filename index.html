@@ -10,7 +10,11 @@
 <div class="container">
     <div id="version-display" class="top-left">Version 1.1</div>
     <div id="coin-display">🪙 <span id="coins-top">0</span></div>
-        <div id="selection-screen">
+     <div id="intro-screen">
+        <img src="assets/Intro/Game_intro.png" alt="" id="intro-img">
+        <button id="intro-play" aria-label="Play"></button>
+    </div>
+        <div id="selection-screen" class="hidden">
         <h1>Choose Your Avatar</h1>
         <div class="avatar-grid">
             <div class="avatar-option">
@@ -51,7 +55,7 @@
             <button onclick="closeShop()">✖️ Close</button>
         </div>
         <button id="custom-btn">🧰 Customize Gear</button>
-        <button id="start-btn">⚔️ Start Battle</button>
+        <button id="start-btn">⚔️ Start Campaign</button>
         <button id="boss-btn">👹 Boss Battle</button>
     </div>
 

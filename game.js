@@ -1,4 +1,7 @@
 let avatars = {};
+let monsters = [];
+let monstersLoaded = false;
+fetch("data/monsters.json").then(r=>r.json()).then(d=>{monsters=d;monstersLoaded=true;});
 let avatarsLoaded = false;
 fetch("data/avatars.json")
   .then(r => r.json())
@@ -36,6 +39,8 @@ let xp=0;
 let level=0;
 let xpData={Knight:{xp:0,level:0},Mage:{xp:0,level:0},Rogue:{xp:0,level:0}};
 let currentAvatar=null;
+let isCampaign=false;
+let campaignLevel=1;
 let cpuCoins=0;
 let battleNumber=1;
 let isBoss=false;
@@ -43,7 +48,12 @@ let currentBattleIsBoss=false;
 let lastRewardCoins=0;
 let lastLootMsg='';
 const log=document.getElementById('log');
-function logMsg(msg){log.innerHTML+=msg+'<br>';log.scrollTop=log.scrollHeight;}
+function logMsg(msg){
+    msg=msg.replace(/CPU/g,'<span class="cpu-text">CPU</span>');
+    msg=msg.replace(/Player/g,'<span class="player-text">Player</span>');
+    log.innerHTML+=msg+'<br>';
+    log.scrollTop=log.scrollHeight;
+}
 
 loadProgress();
 updateCoins();
@@ -197,23 +207,39 @@ function startBattle(){
     document.getElementById('battle-screen').classList.remove('hidden');
     showBack("battle");
     resetShop();
-    const keys=Object.keys(avatars);
-    const enemyKey=keys[Math.floor(Math.random()*keys.length)];
+    let enemy;
     currentBattleIsBoss=isBoss;
-    const baseName=currentBattleIsBoss?(
-        enemyKey==='Rogue'? 'Renegade Rogue':
-        enemyKey==='Knight'? 'Mega Knight':'Master Mage'
-    ):`CPU (${avatars[enemyKey].emoji} ${enemyKey})`;
-    players[1]={
-        ...avatars[enemyKey],
-        name:baseName,
-        maxHp:avatars[enemyKey].hp,
-        maxEnergy:avatars[enemyKey].energy,
-        energy:avatars[enemyKey].energy,
-        img:`assets/avatars/${enemyKey.toLowerCase()}.png`,
-        equipment:{weapon:[],armor:[],artifact:[]},
-        slots:avatars[enemyKey].slots
-    };
+    if(isCampaign){
+        enemy=monsters[campaignLevel-1];
+        players[1]={
+            ...enemy,
+            name:enemy.name,
+            maxHp:enemy.hp,
+            maxEnergy:enemy.energy,
+            energy:enemy.energy,
+            img:`assets/monsters/${enemy.name.toLowerCase()}.png`,
+            equipment:{weapon:[],armor:[],artifact:[]},
+            slots:{weapon:0,armor:0,artifact:0}
+        };
+    }else{
+        const keys=Object.keys(avatars);
+        const enemyKey=keys[Math.floor(Math.random()*keys.length)];
+        const baseName=currentBattleIsBoss?(
+            enemyKey==='Rogue'? 'Renegade Rogue':
+            enemyKey==='Knight'? 'Mega Knight':'Master Mage'
+        ):`CPU (${avatars[enemyKey].emoji} ${enemyKey})`;
+        enemy=avatars[enemyKey];
+        players[1]={
+            ...enemy,
+            name:baseName,
+            maxHp:enemy.hp,
+            maxEnergy:enemy.energy,
+            energy:enemy.energy,
+            img:`assets/avatars/${enemyKey.toLowerCase()}.png`,
+            equipment:{weapon:[],armor:[],artifact:[]},
+            slots:enemy.slots
+        };
+    }
     if(currentBattleIsBoss){
         players[1].maxHp=Math.round(players[1].maxHp*2);
         players[1].atk=Math.round(players[1].atk*1.5);
@@ -422,6 +448,62 @@ function special(){
         poison[1-current]=3;
         logMsg(`${attacker.name} uses Poison Dagger for ${dmg} damage. Enemy poisoned!`);
         if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Ghoul')){
+        let defense=defender.def;
+        let dmg=Math.max(10,Math.round(attacker.atk - defense/2));
+        if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
+        defender.hp-=dmg;
+        attacker.hp=Math.min(attacker.maxHp, attacker.hp+dmg);
+        logMsg(`${attacker.name} drains ${dmg} health.`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Skeleton')){
+        defending[current]=true;
+        defendMult[current]=0.25;
+        logMsg(`${attacker.name} raises a bone shield!`);
+    }else if(name.includes('Banshee')){
+        stun[1-current]=1;
+        logMsg(`${attacker.name} lets out a terrifying scream!`);
+    }else if(name.includes('Cyclops')){
+        let defense=defender.def;
+        let dmg=Math.max(15,Math.round(attacker.atk*2 - defense/2));
+        if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
+        defender.hp-=dmg;
+        logMsg(`${attacker.name} smashes for ${dmg} damage!`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Demon')){
+        let defense=defender.def;
+        let dmg=Math.max(12,Math.round(attacker.atk*1.5 - defense/2));
+        if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
+        defender.hp-=dmg;
+        poison[1-current]=3;
+        logMsg(`${attacker.name} engulfs you in hellfire for ${dmg} damage!`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Minotaur')){
+        let dmg=Math.max(20, Math.round(attacker.atk*1.5));
+        defender.hp-=dmg;
+        logMsg(`${attacker.name} charges dealing ${dmg} damage!`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Gargoyle')){
+        attacker.def+=4;
+        logMsg(`${attacker.name}'s skin hardens like stone, increasing defense!`);
+    }else if(name.includes('Vampire')){
+        let defense=defender.def;
+        let dmg=Math.max(12,Math.round(attacker.atk - defense/2));
+        if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
+        defender.hp-=dmg;
+        attacker.hp=Math.min(attacker.maxHp, attacker.hp+Math.round(dmg/2));
+        logMsg(`${attacker.name} bites for ${dmg} damage and heals.`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
+    }else if(name.includes('Hydra')){
+        attacker.hp=Math.min(attacker.maxHp, attacker.hp+30);
+        logMsg(`${attacker.name} regenerates 30 HP!`);
+    }else if(name.includes('Dragon')){
+        let defense=defender.def;
+        let dmg=Math.max(25,Math.round(attacker.atk*2 - defense/2));
+        if(defending[1-current]){ dmg=Math.round(dmg*defendMult[1-current]); }
+        defender.hp-=dmg;
+        logMsg(`${attacker.name} breathes fire for ${dmg} damage!`);
+        if(checkVictory()) { cooldown[current]=cooldownBase[current]; defending[current]=false; return; }
     }
     cooldown[current]=cooldownBase[current];
     defending[current]=false;
@@ -445,7 +527,15 @@ function checkVictory(){
             document.getElementById('victory-img').src=players[0].img;
             document.getElementById('victory-reward').textContent=`+${reward} coins. ${lastLootMsg}`;
             addXP(50);
-            document.getElementById('next-btn').classList.remove('hidden');
+            if(isCampaign && campaignLevel<monsters.length){
+                document.getElementById('next-btn').classList.remove('hidden');
+            }else{
+                document.getElementById('next-btn').classList.add('hidden');
+                if(isCampaign && campaignLevel>=monsters.length){
+                    logMsg('Campaign complete!');
+                    isCampaign=false;
+                }
+            }
             showConfetti();
         }else{
             document.getElementById('victory-screen').classList.add('hidden');
@@ -469,9 +559,19 @@ function checkVictory(){
 }
 
 function nextBattle(){
-    battleNumber++;
     document.getElementById('next-btn').classList.add('hidden');
-    startBattle();
+    if(isCampaign){
+        campaignLevel++;
+        if(campaignLevel>monsters.length){
+            isCampaign=false;
+            showLoadout();
+            return;
+        }
+        startBattle();
+    }else{
+        battleNumber++;
+        startBattle();
+    }
 }
 
 function equipWeapon(){
@@ -695,6 +795,17 @@ function goBack(){
     hideBack();
 }
 
+function startCampaign(){
+    if(!monstersLoaded){
+        alert('Monsters are still loading. Please try again.');
+        return;
+    }
+    isCampaign=true;
+    campaignLevel=1;
+    battleNumber=1;
+    startBattle();
+}
+
 function startBossBattle(){
     isBoss=true;
     startBattle();
@@ -747,7 +858,7 @@ function playerSpecial(){
 document.getElementById('attack-btn').onclick=playerAttack;
 document.getElementById('defend-btn').onclick=playerDefend;
 document.getElementById('special-btn').onclick=playerSpecial;
-document.getElementById('start-btn').onclick=startBattle;
+document.getElementById('start-btn').onclick=startCampaign;
 document.getElementById('next-btn').onclick=nextBattle;
 document.getElementById('shop-btn').onclick=()=>{
     document.getElementById('shop-screen').classList.toggle('hidden');
@@ -758,6 +869,11 @@ document.getElementById('custom-back').onclick=hideCustom;
 document.getElementById('equip-sel-weapon').onclick=()=>equipSelected('weapon');
 document.getElementById('equip-sel-armor').onclick=()=>equipSelected('armor');
 document.getElementById('equip-sel-artifact').onclick=()=>equipSelected('artifact');
+document.getElementById('intro-play').onclick=()=>{
+    document.getElementById('intro-screen').classList.add('hidden');
+    document.getElementById('selection-screen').classList.remove('hidden');
+    history.pushState({screen:'selection'}, "");
+};
 document.getElementById('buy-weapon-btn').addEventListener('mouseenter',()=>previewItem('weapon'));
 document.getElementById('buy-weapon-btn').addEventListener('mouseleave',clearPreview);
 document.getElementById('buy-armor-btn').addEventListener('mouseenter',()=>previewItem('armor'));
@@ -766,5 +882,12 @@ document.getElementById('buy-artifact-btn').addEventListener('mouseenter',()=>pr
 document.getElementById('buy-artifact-btn').addEventListener('mouseleave',clearPreview);
 
 // Initialize history and handle browser back
-history.replaceState({screen:"selection"}, "");
-window.addEventListener("popstate", ()=>{ goBack(); });
+history.replaceState({screen:"intro"}, "");
+window.addEventListener("popstate", (e)=>{
+    if(e.state && e.state.screen === 'intro'){
+        document.getElementById('intro-screen').classList.remove('hidden');
+        document.getElementById('selection-screen').classList.add('hidden');
+    }else{
+        goBack();
+    }
+});
