@@ -1,5 +1,5 @@
 ## Overview
-Avatar Arena is a simple browser-based 1v1 fighter AI-assisted game project
+Avatar Arena is an AI-assisted browser 1v1 Fighter game project
 built using HTML, CSS, and JavaScript. Pick the Knight, Mage, or Rogue, each 
 with unique stats and a special move that costs energy. Battles are turn-based
 and award coins to spend in the shop on weapons, armor and artifacts.
