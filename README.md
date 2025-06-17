@@ -9,6 +9,6 @@ avatar and you can challenge a boss when ready. Your progress is saved
 locally and backgrounds shift to match your chosen class.
 
 ## Playing
-Play the latest version at: <https://evxlee.github.io/Test.github.io/>
+Play the latest version at: <https://evxlee.github.io/AvatarArena.github.io/>
 
 Recommended to play at 75% browser zoom for best experience.
